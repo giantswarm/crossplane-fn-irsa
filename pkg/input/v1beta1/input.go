@@ -34,4 +34,14 @@ type Spec struct {
 	//
 	// +required
 	PatchTo string `json:"patchTo"`
+
+	// RegionRef A path to the region in the Claim
+	//
+	// +required
+	RegionRef string `json:"regionRef"`
+
+	// ProviderConfigRef A path to the provider config in the Claim
+	//
+	// +required
+	ProviderConfigRef string `json:"providerConfigRef"`
 }

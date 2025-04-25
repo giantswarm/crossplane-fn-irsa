@@ -34,9 +34,17 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1beta1.RunFunctionRequ
 		return rsp, nil
 	}
 
+	// Extract region and provider config from input
 	var region, providerConfigRef string
-	region = "eu-central-1"            // Default region, ideally this would come from input
-	providerConfigRef = "aws-provider" // Default provider config, ideally this would come from input
+	if region, err = ac.composed.GetString(input.Spec.RegionRef); err != nil {
+		response.Fatal(rsp, errors.Wrapf(err, "cannot get region from %q", input.Spec.RegionRef))
+		return rsp, nil
+	}
+
+	if providerConfigRef, err = ac.composed.GetString(input.Spec.ProviderConfigRef); err != nil {
+		response.Fatal(rsp, errors.Wrapf(err, "cannot get provider config from %q", input.Spec.ProviderConfigRef))
+		return rsp, nil
+	}
 
 	if err = f.DiscoverHostedZone(input.Spec.Domain, input.Spec.Tags, &region, &providerConfigRef, input.Spec.PatchTo, ac.composed); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot discover hosted zone for domain %q", input.Spec.Domain))
