@@ -9,8 +9,8 @@ import (
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	"github.com/crossplane/crossplane-runtime/pkg/fieldpath"
+	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	xfnaws "github.com/giantswarm/xfnlib/pkg/auth/aws"
 	"github.com/giantswarm/xfnlib/pkg/composite"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -120,7 +120,7 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 	)
 
 	f.log.Info("Discovering hosted zone", "domain", domain, "tags", tags)
-	
+
 	if cfg, services, err = awsConfig(region, providerConfigRef, f.log); err != nil {
 		err = errors.Wrap(err, "failed to load aws config")
 		return
@@ -191,7 +191,7 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 		}
 
 		matchingHostedZones = filteredHostedZones
-		
+
 		if len(matchingHostedZones) == 0 {
 			err = errors.New("no hosted zone found matching the domain and tags")
 			return

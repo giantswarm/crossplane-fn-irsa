@@ -34,9 +34,8 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1beta1.RunFunctionRequ
 		return rsp, nil
 	}
 
-	// FUNCTION BODY
 	var region, providerConfigRef string
-	region = "eu-central-1" // Default region, ideally this would come from input
+	region = "eu-central-1"            // Default region, ideally this would come from input
 	providerConfigRef = "aws-provider" // Default provider config, ideally this would come from input
 
 	if err = f.DiscoverHostedZone(input.Spec.Domain, input.Spec.Tags, &region, &providerConfigRef, input.Spec.PatchTo, ac.composed); err != nil {
