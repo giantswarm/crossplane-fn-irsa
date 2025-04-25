@@ -30,4 +30,8 @@ type Spec struct {
 
 	// +optional
 	Tags map[string]string `json:"tags,omitempty"`
+
+	//
+	// +required
+	PatchTo string `json:"patchTo"`
 }
