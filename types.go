@@ -7,7 +7,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EksImportXRObject is the information we are going to pull from the XR
+// IRSAImportXRObject is the information we are going to pull from the XR
 type XRObject struct {
 	Metadata metav1.ObjectMeta `json:"metadata"`
 	Spec     XRSpec            `json:"spec"`
@@ -40,11 +40,11 @@ type XrConfig struct {
 	cluster, namespace, region, providerConfigRef *string
 	labels, annotations                           map[string]string
 	composed                                      *composite.Composition
-	composite                                     EksImportXRObject
+	composite                                     IRSAImportXRObject
 }
 
-// EksImportXRObject is the information we are going to pull from the XR
-type EksImportXRObject struct {
+// IRSAImportXRObject is the information we are going to pull from the XR
+type IRSAImportXRObject struct {
 	Metadata metav1.ObjectMeta `json:"metadata"`
 	Spec     any               `json:"spec"`
 }

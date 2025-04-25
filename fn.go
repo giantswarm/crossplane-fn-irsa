@@ -9,10 +9,10 @@ import (
 
 	"github.com/giantswarm/xfnlib/pkg/composite"
 
-	"github.com/giantswarm/crossplane-fn-template/pkg/input/v1beta1"
+	"github.com/giantswarm/crossplane-fn-irsa/pkg/input/v1beta1"
 )
 
-const composedName = "crossplane-fn-template"
+const composedName = "crossplane-fn-irsa"
 
 // RunFunction Execute the desired reconcilliation state, creating any required resources
 func (f *Function) RunFunction(_ context.Context, req *fnv1beta1.RunFunctionRequest) (rsp *fnv1beta1.RunFunctionResponse, err error) {

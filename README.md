@@ -18,7 +18,7 @@ Check out the according [handbook article](https://handbook.giantswarm.io/docs/d
 
 You need to set the name in several places
 
-- `go.mod` - change the name from `crossplane-fn-template` to something reflective of your function
+- `go.mod` - change the name from `crossplane-fn-irsa` to something reflective of your function
 - `input/v1beta1/input.go` - change `+groupName=template.fn.giantswarm.io` to something unique for your function
 - `fn.go` - set `composedName` to the name of your function (I normally use basename $module)
 

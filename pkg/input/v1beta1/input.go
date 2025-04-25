@@ -1,6 +1,6 @@
 // Package v1beta1 contains the input type for this Function
 // +kubebuilder:object:generate=true
-// +groupName=template.fn.giantswarm.io
+// +groupName=irsa.fn.giantswarm.io
 // +versionName=v1beta1
 package v1beta1
 
@@ -24,4 +24,10 @@ type Input struct {
 }
 
 // Spec - Defines the spec given to this input type, providing the required, and optional elements that may be defined
-type Spec struct{}
+type Spec struct {
+	// +required
+	Domain string `json:"domain"`
+
+	// +optional
+	Tags map[string]string `json:"tags,omitempty"`
+}
