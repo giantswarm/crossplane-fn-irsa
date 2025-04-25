@@ -2,6 +2,8 @@ module github.com/giantswarm/crossplane-fn-irsa
 
 go 1.24.0
 
+replace github.com/crossplane/crossplane-runtime => github.com/crossplane/crossplane-runtime v1.15.1
+
 require (
 	github.com/alecthomas/kong v1.10.0
 	github.com/aws/aws-sdk-go-v2 v1.30.3
