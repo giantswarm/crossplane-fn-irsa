@@ -1,6 +1,6 @@
 module github.com/giantswarm/crossplane-fn-irsa
 
-go 1.22.2
+go 1.24.0
 
 replace (
 	github.com/crossplane/crossplane => github.com/crossplane/crossplane v1.15.3
