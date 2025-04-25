@@ -5,7 +5,7 @@ import (
 	"github.com/alecthomas/kong"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	"github.com/crossplane/function-sdk-go"
+	function "github.com/crossplane/function-sdk-go"
 	"github.com/crossplane/function-sdk-go/logging"
 	ctrl "sigs.k8s.io/controller-runtime"
 )
