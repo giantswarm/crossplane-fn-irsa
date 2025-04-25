@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.37.0
 	github.com/aws/aws-sdk-go-v2/service/sts v1.30.3
 	github.com/crossplane/crossplane-runtime v1.19.0
-	github.com/crossplane/function-sdk-go v0.4.0
+	github.com/crossplane/function-sdk-go v0.2.0
 	github.com/giantswarm/xfnlib v0.0.0-20240727134425-01a8491e4ce3
 	k8s.io/apimachinery v0.33.0
 	sigs.k8s.io/controller-runtime v0.20.4
