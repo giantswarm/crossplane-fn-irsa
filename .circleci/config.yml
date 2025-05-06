@@ -37,10 +37,10 @@ jobs:
 
             docker buildx build . -t ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
 
-            echo "triggering : ./crossplane xpkg build -f package --embed-runtime-image=${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}"
-            ./crossplane xpkg build -f package --embed-runtime-image=${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
+            echo "triggering : ./crossplane xpkg build -f pkg/package/ --embed-runtime-image=${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}"
+            ./crossplane xpkg build -f pkg/package/ --embed-runtime-image=${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
 
-            cd package
+            cd pkg/package/
             ls
             echo "triggering : ./crossplane xpkg push ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}"
             ../crossplane xpkg push ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
