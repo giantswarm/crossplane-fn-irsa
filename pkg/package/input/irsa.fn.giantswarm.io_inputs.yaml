@@ -43,12 +43,24 @@ spec:
             properties:
               domain:
                 type: string
+              patchTo:
+                type: string
+              providerConfigRef:
+                description: ProviderConfigRef A path to the provider config in the
+                  Claim
+                type: string
+              regionRef:
+                description: RegionRef A path to the region in the Claim
+                type: string
               tags:
                 additionalProperties:
                   type: string
                 type: object
             required:
             - domain
+            - patchTo
+            - providerConfigRef
+            - regionRef
             type: object
         type: object
     served: true
