@@ -31,16 +31,13 @@ type XRSpec struct {
 // Function returns whatever response you ask it to.
 type Function struct {
 	fnv1.UnimplementedFunctionRunnerServiceServer
-	log       logging.Logger
-	composed  *composite.Composition
-	composite XRObject
+	log logging.Logger
 }
 
 type XrConfig struct {
-	cluster, namespace, region, providerConfigRef *string
-	labels, annotations                           map[string]string
-	composed                                      *composite.Composition
-	composite                                     IRSAImportXRObject
+	namespace, region, providerConfigRef *string
+	annotations                          map[string]string
+	composed                             *composite.Composition
 }
 
 // IRSAImportXRObject is the information we are going to pull from the XR
