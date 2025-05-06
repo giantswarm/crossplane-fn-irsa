@@ -73,8 +73,6 @@ github.com/fsnotify/fsnotify v1.7.0 h1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nos
 github.com/fsnotify/fsnotify v1.7.0/go.mod h1:40Bi/Hjc2AVfZrqy+aj+yEI+/bRxZnMJyTJwOpGvigM=
 github.com/fxamacker/cbor/v2 v2.8.0 h1:fFtUGXUzXPHTIUdne5+zzMPTfffl3RD5qYnkY40vtxU=
 github.com/fxamacker/cbor/v2 v2.8.0/go.mod h1:vM4b+DJCtHn+zz7h3FFp/hDAI9WNWCsZj23V5ytsSxQ=
-github.com/giantswarm/xfnlib v0.0.0-20250506072150-640c57179927 h1:g97j8Y5EkAtOlUKvsopsOnlvbPqFVR8W6+b5mU3z7kY=
-github.com/giantswarm/xfnlib v0.0.0-20250506072150-640c57179927/go.mod h1:ar5E5Jx6RY6e9pw0I4T2n/72bBXGgOoYUvaPMCjKU7o=
 github.com/giantswarm/xfnlib v0.0.0-20250506073315-8e9d2fc08cb0 h1:Ph0jEQ3VL5cZwPqmFBLWrzqIWEFMPQDfZ/DZc6mfL4o=
 github.com/giantswarm/xfnlib v0.0.0-20250506073315-8e9d2fc08cb0/go.mod h1:ar5E5Jx6RY6e9pw0I4T2n/72bBXGgOoYUvaPMCjKU7o=
 github.com/go-ini/ini v1.67.0 h1:z6ZrTEZqSWOTyH2FlglNbNgARyHG8oLW9gMELqKr06A=
