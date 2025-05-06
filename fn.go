@@ -5,7 +5,8 @@ import (
 
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/crossplane/crossplane-runtime/pkg/fieldpath"
-	fnv1beta1 "github.com/crossplane/function-sdk-go/proto/v1beta1"
+	v1 "github.com/crossplane/function-sdk-go/proto/v1"
+
 	"github.com/crossplane/function-sdk-go/request"
 	"github.com/crossplane/function-sdk-go/response"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -18,7 +19,7 @@ import (
 const composedName = "crossplane-fn-irsa"
 
 // RunFunction Execute the desired reconcilliation state, creating any required resources
-func (f *Function) RunFunction(_ context.Context, req *fnv1beta1.RunFunctionRequest) (rsp *fnv1beta1.RunFunctionResponse, err error) {
+func (f *Function) RunFunction(_ context.Context, req *v1.RunFunctionRequest) (rsp *v1.RunFunctionResponse, err error) {
 	f.log.Info("preparing function", composedName, req.GetMeta().GetTag())
 	rsp = response.To(req, response.DefaultTTL)
 
