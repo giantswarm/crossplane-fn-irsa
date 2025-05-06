@@ -35,8 +35,8 @@ type Function struct {
 }
 
 type XrConfig struct {
-	region, providerConfigRef *string
-	composed                  *composite.Composition
+	providerConfigRef *string
+	composed          *composite.Composition
 }
 
 // IRSAImportXRObject is the information we are going to pull from the XR
