@@ -43,6 +43,6 @@ jobs:
             cd pkg/package/
             ls
             echo "triggering : ./crossplane xpkg push ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}"
-            ../crossplane xpkg push ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
+            ../../crossplane xpkg push ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
 
             echo "Pushed to ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}"
