@@ -25,7 +25,6 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 
 	var (
 		composed       *composite.Composition
-		ac             XrConfig = XrConfig{}
 		input          v1beta1.Input
 		region         string
 		providerConfig string
@@ -73,7 +72,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		return rsp, nil
 	}
 
-	if err = ac.composed.ToResponse(rsp); err != nil {
+	if err = composed.ToResponse(rsp); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot convert composition to response %T", rsp))
 		return
 	}

@@ -3,7 +3,6 @@ package main
 import (
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
-	"github.com/giantswarm/xfnlib/pkg/composite"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -32,10 +31,6 @@ type XRSpec struct {
 type Function struct {
 	fnv1.UnimplementedFunctionRunnerServiceServer
 	log logging.Logger
-}
-
-type XrConfig struct {
-	composed *composite.Composition
 }
 
 // IRSAImportXRObject is the information we are going to pull from the XR
