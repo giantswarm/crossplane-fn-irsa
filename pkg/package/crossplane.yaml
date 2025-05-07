@@ -1,6 +1,16 @@
 ---
-apiVersion: meta.pkg.crossplane.io/v1beta1
+apiVersion: pkg.crossplane.io/v1beta1
 kind: Function
 metadata:
-  name: crossplane-fn-irsa
-spec: {}
+  name: function-irsa
+spec:
+  ignoreCrossplaneConstraints: false
+  package: gsoci.azurecr.io/giantswarm/crossplane-fn-irsa:v0.0.1-dev
+  packagePullPolicy: Always
+  revisionActivationPolicy: Automatic
+  revisionHistoryLimit: 1
+  runtimeConfigRef:
+    apiVersion: pkg.crossplane.io/v1beta1
+    kind: DeploymentRuntimeConfig
+    name: xfn-irsa
+  skipDependencyResolution: true

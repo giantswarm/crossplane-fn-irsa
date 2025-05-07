@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/crossplane/crossplane-runtime/pkg/fieldpath"
 	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
@@ -24,8 +25,11 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	rsp = response.To(req, response.DefaultTTL)
 
 	var (
-		ac    XrConfig = XrConfig{}
-		input v1beta1.Input
+		composed       *composite.Composition
+		ac             XrConfig = XrConfig{}
+		input          v1beta1.Input
+		region         string
+		providerConfig xpv1.Reference
 	)
 
 	oxr, err := request.GetObservedCompositeResource(req)
@@ -34,7 +38,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		return rsp, nil
 	}
 
-	if ac.composed, err = composite.New(req, &input, &oxr); err != nil {
+	if composed, err = composite.New(req, &input, &oxr); err != nil {
 		response.Fatal(rsp, errors.Wrap(err, "error setting up function "+composedName))
 		return rsp, nil
 	}
@@ -45,18 +49,20 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	}
 
 	// Extract region and provider config from input
-	var region, providerConfigRef string
 	if region, err = f.getStringFromPaved(oxr.Resource, input.Spec.RegionRef); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot get region from %q", input.Spec.RegionRef))
 		return rsp, nil
 	}
+	f.log.Info("Region", "region", region)
 
-	if providerConfigRef, err = f.getStringFromPaved(oxr.Resource, input.Spec.ProviderConfigRef); err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot get provider config from %q", input.Spec.ProviderConfigRef))
+	if providerConfig, err = f.getProviderConfigReferenceFromPaved(oxr.Resource, input.Spec.ProviderConfigRef); err != nil {
+		f.log.Info("cannot get provider config reference from input", "error", err)
+		response.Fatal(rsp, errors.Wrap(err, "cannot get provider config reference from input"))
 		return rsp, nil
 	}
+	f.log.Info("ProviderConfig", "providerConfig", providerConfig)
 
-	if err = f.DiscoverHostedZone(input.Spec.Domain, input.Spec.Tags, &region, &providerConfigRef, input.Spec.PatchTo, ac.composed); err != nil {
+	if err = f.DiscoverHostedZone(input.Spec.Domain, input.Spec.Tags, region, providerConfig, input.Spec.PatchTo, composed); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot discover hosted zone for domain %q", input.Spec.Domain))
 		return rsp, nil
 	}
@@ -76,5 +82,15 @@ func (f *Function) getStringFromPaved(req runtime.Object, ref string) (value str
 	}
 
 	value, err = paved.GetString(ref)
+	return
+}
+
+func (f *Function) getProviderConfigReferenceFromPaved(req runtime.Object, ref string) (value xpv1.Reference, err error) {
+	var paved *fieldpath.Paved
+	if paved, err = fieldpath.PaveObject(req); err != nil {
+		return
+	}
+
+	err = paved.GetValueInto(ref, &value)
 	return
 }

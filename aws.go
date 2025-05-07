@@ -8,6 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/route53"
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/crossplane/crossplane-runtime/pkg/fieldpath"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
@@ -112,7 +113,7 @@ func (f *Function) GetAccountId(region, pcr *string) (id string, err error) {
 	return
 }
 
-func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, region, providerConfigRef *string, patchTo string, composed *composite.Composition) (err error) {
+func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, region string, providerConfigRef xpv1.Reference, patchTo string, composed *composite.Composition) (err error) {
 	var (
 		cfg      aws.Config
 		services map[string]string
@@ -121,8 +122,8 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 
 	f.log.Info("Discovering hosted zone", "domain", domain, "tags", tags)
 
-	if cfg, services, err = awsConfig(region, providerConfigRef, f.log); err != nil {
-		err = errors.Wrap(err, "failed to load aws config")
+	if cfg, services, err = awsConfig(&region, &providerConfigRef.Name, f.log); err != nil {
+		err = errors.Wrap(err, "failed to load aws config with region "+region)
 		return
 	}
 
