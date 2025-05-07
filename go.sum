@@ -49,6 +49,8 @@ github.com/blang/semver/v4 v4.0.0/go.mod h1:IbckMUScFkM3pff0VJDNKRiT6TG/YpiHIM2y
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cpuguy83/go-md2man/v2 v2.0.6/go.mod h1:oOW0eioCTA6cOiMLiUPZOpcVxMig6NIQQ7OS05n1F4g=
+github.com/crossplane-contrib/provider-aws v0.52.3 h1:B73DlXAUQQO/GrQEiCoeG3NRCTh/4FEnY4fPZ5XSILU=
+github.com/crossplane-contrib/provider-aws v0.52.3/go.mod h1:QNH8qd0vB3BcBrsftSzd/hOKLH2jb7fT6a5A5OCC+ck=
 github.com/crossplane/crossplane-runtime v1.19.0 h1:yZmF8cYy8/PYiA+aF3ONjVinfuV06Vi3hHQwjYR2Qak=
 github.com/crossplane/crossplane-runtime v1.19.0/go.mod h1:z8CV6dXxO5yxzfJGa4bgnWuyAnjZ3hY19cqGDcr5Bg0=
 github.com/crossplane/function-sdk-go v0.4.0 h1:1jd+UIaZlVNQCUO4hLAgUqWBRnUKw2ObF9ZuMw5CpKk=
@@ -73,8 +75,6 @@ github.com/fsnotify/fsnotify v1.7.0 h1:8JEhPFa5W2WU7YfeZzPNqzMP6Lwt7L2715Ggo0nos
 github.com/fsnotify/fsnotify v1.7.0/go.mod h1:40Bi/Hjc2AVfZrqy+aj+yEI+/bRxZnMJyTJwOpGvigM=
 github.com/fxamacker/cbor/v2 v2.8.0 h1:fFtUGXUzXPHTIUdne5+zzMPTfffl3RD5qYnkY40vtxU=
 github.com/fxamacker/cbor/v2 v2.8.0/go.mod h1:vM4b+DJCtHn+zz7h3FFp/hDAI9WNWCsZj23V5ytsSxQ=
-github.com/giantswarm/xfnlib v0.0.0-20250507092017-75f5604a2964 h1:WQ5cJyox1hBnbfSEtRqGq4w6PJPtQ2gvGXaMaWcoCZA=
-github.com/giantswarm/xfnlib v0.0.0-20250507092017-75f5604a2964/go.mod h1:ar5E5Jx6RY6e9pw0I4T2n/72bBXGgOoYUvaPMCjKU7o=
 github.com/giantswarm/xfnlib v0.0.0-20250507135415-f405cac0387d h1:yy+NLxxA+Vnu/xA+pbgui5C7S1FytOfV/qm21nkLw2A=
 github.com/giantswarm/xfnlib v0.0.0-20250507135415-f405cac0387d/go.mod h1:0XJReMOGg0cuYGaFTNiuc5kCVg2WLmJAAxexKVFodGA=
 github.com/go-ini/ini v1.67.0 h1:z6ZrTEZqSWOTyH2FlglNbNgARyHG8oLW9gMELqKr06A=
