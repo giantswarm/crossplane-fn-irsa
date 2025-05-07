@@ -135,6 +135,7 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 
 	f.log.Info("setting up route53 client with endpoint " + ep)
 	client = getRoute53Client(cfg, ep)
+	f.log.Info("client created")
 
 	var hostedZones *route53.ListHostedZonesOutput
 	hostedZones, err = GetHostedZones(context.Background(), client, &route53.ListHostedZonesInput{})
@@ -150,6 +151,8 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 			matchingHostedZones = append(matchingHostedZones, hz)
 		}
 	}
+
+	f.log.Info("matching hosted zones", "matchingHostedZones", matchingHostedZones)
 
 	if len(matchingHostedZones) == 0 {
 		err = errors.New("no hosted zone found matching the domain: " + domain)
