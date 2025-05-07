@@ -29,7 +29,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		ac             XrConfig = XrConfig{}
 		input          v1beta1.Input
 		region         string
-		providerConfig xpv1.Reference
+		providerConfig string
 	)
 
 	oxr, err := request.GetObservedCompositeResource(req)
@@ -55,7 +55,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	}
 	f.log.Info("Region", "region", region)
 
-	if providerConfig, err = f.getProviderConfigReferenceFromPaved(oxr.Resource, input.Spec.ProviderConfigRef); err != nil {
+	if providerConfig, err = f.getStringFromPaved(oxr.Resource, input.Spec.ProviderConfigRef); err != nil {
 		f.log.Info("cannot get provider config reference from input", "error", err)
 		response.Fatal(rsp, errors.Wrap(err, "cannot get provider config reference from input"))
 		return rsp, nil
