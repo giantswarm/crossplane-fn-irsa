@@ -122,6 +122,7 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 	f.log.Info("Discovering hosted zone", "domain", domain, "tags", tags)
 
 	if cfg, services, err = awsConfig(&region, &providerConfigRef, f.log); err != nil {
+		f.log.Info("Error loading aws config", "error", err)
 		err = errors.Wrap(err, "failed to load aws config with region "+region)
 		return err
 	}
