@@ -5,6 +5,7 @@
 package v1beta1
 
 import (
+	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -43,5 +44,5 @@ type Spec struct {
 	// ProviderConfigRef A path to the provider config in the Claim
 	//
 	// +required
-	ProviderConfigRef string `json:"providerConfigRef"`
+	ProviderConfigRef xpv1.Reference `json:"providerConfigRef"`
 }
