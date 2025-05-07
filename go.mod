@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.19
 	github.com/crossplane/crossplane-runtime v1.19.0
 	github.com/crossplane/function-sdk-go v0.4.0
-	github.com/giantswarm/xfnlib v0.0.0-20250507092017-75f5604a2964
+	github.com/giantswarm/xfnlib v0.0.0-20250507135415-f405cac0387d
 	k8s.io/apimachinery v0.33.0
 	sigs.k8s.io/controller-runtime v0.20.4
 	sigs.k8s.io/controller-tools v0.17.3
