@@ -123,7 +123,7 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 
 	if cfg, services, err = awsConfig(&region, &providerConfigRef, f.log); err != nil {
 		err = errors.Wrap(err, "failed to load aws config with region "+region)
-		return
+		return err
 	}
 
 	var ep string
@@ -139,7 +139,7 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 	hostedZones, err = GetHostedZones(context.Background(), client, &route53.ListHostedZonesInput{})
 	if err != nil {
 		f.log.Info("Error listing hosted zones", "error", err)
-		return
+		return err
 	}
 
 	var matchingHostedZones []route53types.HostedZone
@@ -152,7 +152,7 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 
 	if len(matchingHostedZones) == 0 {
 		err = errors.New("no hosted zone found matching the domain: " + domain)
-		return
+		return err
 	}
 
 	if len(tags) > 0 {
@@ -194,7 +194,7 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 
 		if len(matchingHostedZones) == 0 {
 			err = errors.New("no hosted zone found matching the domain and tags")
-			return
+			return err
 		}
 	}
 
@@ -202,5 +202,5 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 	f.log.Info("Found hosted zone", "hostedZoneId", hostedZoneId)
 
 	err = f.patchFieldValueToObject(patchTo, hostedZoneId, composed.DesiredComposite.Resource)
-	return
+	return err
 }
