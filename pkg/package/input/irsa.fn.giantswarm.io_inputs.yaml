@@ -43,8 +43,6 @@ spec:
             properties:
               domain:
                 type: string
-              patchTo:
-                type: string
               providerConfigRef:
                 description: ProviderConfigRef A path to the provider config in the
                   Claim
@@ -52,15 +50,23 @@ spec:
               regionRef:
                 description: RegionRef A path to the region in the Claim
                 type: string
+              route53HostedZonePatchTo:
+                type: string
+              s3DiscoveryPatchTo:
+                type: string
+              s3KeysPatchTo:
+                type: string
               tags:
                 additionalProperties:
                   type: string
                 type: object
             required:
             - domain
-            - patchTo
             - providerConfigRef
             - regionRef
+            - route53HostedZonePatchTo
+            - s3DiscoveryPatchTo
+            - s3KeysPatchTo
             type: object
         type: object
     served: true

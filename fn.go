@@ -67,8 +67,13 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	}
 	f.log.Info("Domain", "domain", domain)
 
-	if err = f.DiscoverHostedZone(domain, input.Spec.Tags, region, providerConfig, input.Spec.PatchTo, composed); err != nil {
+	if err = f.DiscoverHostedZone(domain, input.Spec.Tags, region, providerConfig, input.Spec.Route53HostedZonePatchTo, composed); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot discover hosted zone for domain %q", domain))
+		return rsp, nil
+	}
+
+	if err = f.GenerateDiscoveryFile(domain, input.Spec.A3KeysPatchTo, region, input.Spec.S3WellKnownPatchTo, composed); err != nil {
+		response.Fatal(rsp, errors.Wrapf(err, "cannot generate discovery file for domain %q", domain))
 		return rsp, nil
 	}
 

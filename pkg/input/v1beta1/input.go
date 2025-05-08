@@ -33,7 +33,15 @@ type Spec struct {
 
 	//
 	// +required
-	PatchTo string `json:"patchTo"`
+	Route53HostedZonePatchTo string `json:"route53HostedZonePatchTo"`
+
+	//
+	// +required
+	S3KeysPatchTo string `json:"s3KeysPatchTo"`
+
+	//
+	// +required
+	S3DiscoveryPatchTo string `json:"s3DiscoveryPatchTo"`
 
 	// RegionRef A path to the region in the Claim
 	//
