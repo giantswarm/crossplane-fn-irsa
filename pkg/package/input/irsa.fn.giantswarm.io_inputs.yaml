@@ -54,6 +54,8 @@ spec:
                 type: string
               route53HostedZonePatchTo:
                 type: string
+              s3BucketName:
+                type: string
               s3DiscoveryPatchTo:
                 type: string
               s3KeysPatchTo:

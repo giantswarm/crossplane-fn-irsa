@@ -42,6 +42,9 @@ type Spec struct {
 	// +required
 	S3KeysPatchTo string `json:"s3KeysPatchTo"`
 
+	// +required
+	S3BucketName string `json:"s3BucketName"`
+
 	//
 	// +required
 	S3DiscoveryPatchTo string `json:"s3DiscoveryPatchTo"`
