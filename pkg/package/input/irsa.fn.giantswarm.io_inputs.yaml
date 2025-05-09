@@ -41,9 +41,9 @@ spec:
           spec:
             description: Defines the spec for this input
             properties:
-              domain:
+              domainRef:
                 type: string
-              irsaDomain:
+              irsaDomainRef:
                 type: string
               providerConfigRef:
                 description: ProviderConfigRef A path to the provider config in the
@@ -63,11 +63,8 @@ spec:
                   type: string
                 type: object
             required:
-            - domain
-            - irsaDomain
             - providerConfigRef
             - regionRef
-            - route53HostedZonePatchTo
             - s3DiscoveryPatchTo
             - s3KeysPatchTo
             type: object

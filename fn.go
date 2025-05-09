@@ -61,21 +61,23 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	}
 	f.log.Debug("ProviderConfig", "providerConfig", providerConfig)
 
-	if domain, err = f.getStringFromPaved(oxr.Resource, input.Spec.DomainRef); err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot get region from %q", input.Spec.RegionRef))
-		return rsp, nil
-	}
-	f.log.Debug("Domain", "domain", domain)
+	if input.Spec.DomainRef != "" {
+		if domain, err = f.getStringFromPaved(oxr.Resource, input.Spec.DomainRef); err != nil {
+			response.Fatal(rsp, errors.Wrapf(err, "cannot get region from %q", input.Spec.RegionRef))
+			return rsp, nil
+		}
+		f.log.Debug("Domain", "domain", domain)
 
-	if irsaDomain, err = f.getStringFromPaved(oxr.Resource, input.Spec.IrsaDomainRef); err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot get region from %q", input.Spec.RegionRef))
-		return rsp, nil
-	}
-	f.log.Debug("IrsaDomain", "irsaDomain", irsaDomain)
+		if irsaDomain, err = f.getStringFromPaved(oxr.Resource, input.Spec.IrsaDomainRef); err != nil {
+			response.Fatal(rsp, errors.Wrapf(err, "cannot get region from %q", input.Spec.RegionRef))
+			return rsp, nil
+		}
+		f.log.Debug("IrsaDomain", "irsaDomain", irsaDomain)
 
-	if err = f.DiscoverHostedZone(domain, input.Spec.Tags, region, providerConfig, input.Spec.Route53HostedZonePatchTo, composed); err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot discover hosted zone for domain %q", domain))
-		return rsp, nil
+		if err = f.DiscoverHostedZone(domain, input.Spec.Tags, region, providerConfig, input.Spec.Route53HostedZonePatchTo, composed); err != nil {
+			response.Fatal(rsp, errors.Wrapf(err, "cannot discover hosted zone for domain %q", domain))
+			return rsp, nil
+		}
 	}
 
 	if err = f.GenerateDiscoveryFile(irsaDomain, composed.DesiredComposite.Resource.GetName(), region, input.Spec.S3DiscoveryPatchTo, composed); err != nil {
