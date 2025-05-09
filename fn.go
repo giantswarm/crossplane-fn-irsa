@@ -59,7 +59,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		response.Fatal(rsp, errors.Wrapf(err, "cannot get S3 bucket name from %q", input.Spec.S3BucketName))
 		return rsp, nil
 	}
-	f.log.Debug("S3BucketName", "S3BucketName", region)
+	f.log.Debug("S3BucketName", "S3BucketName", S3BucketName)
 
 	if providerConfig, err = f.getStringFromPaved(oxr.Resource, input.Spec.ProviderConfigRef); err != nil {
 		f.log.Info("cannot get provider config reference from input", "error", err)
