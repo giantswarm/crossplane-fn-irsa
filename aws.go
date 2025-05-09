@@ -85,7 +85,6 @@ func (f *Function) GetAccountId(region, pcr *string) (id string, err error) {
 		stsclient AwsStsApi
 	)
 
-	f.log.Info("Getting caller identity")
 	if cfg, services, err = awsConfig(region, pcr, f.log); err != nil {
 		err = errors.Wrap(err, "failed to load aws config")
 		return
@@ -97,7 +96,6 @@ func (f *Function) GetAccountId(region, pcr *string) (id string, err error) {
 		ep = services["sts"]
 	}
 
-	f.log.Info("setting up sts client with endpoint " + ep)
 	stsclient = getStsClient(cfg, ep)
 	var identity *sts.GetCallerIdentityOutput
 	{
@@ -107,7 +105,6 @@ func (f *Function) GetAccountId(region, pcr *string) (id string, err error) {
 		}
 	}
 
-	f.log.Info("Identity", "account", *identity.Account, "arn", *identity.Arn, "userid", *identity.UserId)
 	id = *identity.Account
 	return
 }
@@ -119,7 +116,7 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 		client   Route53Api
 	)
 
-	f.log.Info("Discovering hosted zone", "domain", domain, "tags", tags)
+	f.log.Debug("Discovering hosted zone", "domain", domain, "tags", tags)
 
 	if cfg, services, err = awsConfig(&region, &providerConfigRef, f.log); err != nil {
 		f.log.Info("Error loading aws config", "error", err)
@@ -133,9 +130,7 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 		ep = services["route53"]
 	}
 
-	f.log.Info("setting up route53 client with endpoint " + ep)
 	client = getRoute53Client(cfg, ep)
-	f.log.Info("client created")
 
 	var hostedZones *route53.ListHostedZonesOutput
 	hostedZones, err = GetHostedZones(context.Background(), client, &route53.ListHostedZonesInput{})
@@ -152,7 +147,7 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 		}
 	}
 
-	f.log.Info("matching hosted zones", "matchingHostedZones", matchingHostedZones)
+	f.log.Debug("matching hosted zones", "matchingHostedZones", matchingHostedZones)
 
 	if len(matchingHostedZones) == 0 {
 		err = errors.New("no hosted zone found matching the domain: " + domain)
@@ -203,7 +198,7 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 	}
 
 	hostedZoneId := strings.TrimPrefix(*matchingHostedZones[0].Id, "/hostedzone/")
-	f.log.Info("Found hosted zone", "hostedZoneId", hostedZoneId)
+	f.log.Debug("Found hosted zone", "hostedZoneId", hostedZoneId)
 
 	err = f.patchFieldValueToObject(patchTo, hostedZoneId, composed.DesiredComposite.Resource)
 	return err

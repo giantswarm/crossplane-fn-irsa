@@ -20,7 +20,6 @@ const composedName = "crossplane-fn-irsa"
 
 // RunFunction Execute the desired reconcilliation state, creating any required resources
 func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) (rsp *fnv1.RunFunctionResponse, err error) {
-	f.log.Info("preparing function", composedName, req.GetMeta().GetTag())
 	rsp = response.To(req, response.DefaultTTL)
 
 	var (
@@ -52,20 +51,20 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		response.Fatal(rsp, errors.Wrapf(err, "cannot get region from %q", input.Spec.RegionRef))
 		return rsp, nil
 	}
-	f.log.Info("Region", "region", region)
+	f.log.Debug("Region", "region", region)
 
 	if providerConfig, err = f.getStringFromPaved(oxr.Resource, input.Spec.ProviderConfigRef); err != nil {
 		f.log.Info("cannot get provider config reference from input", "error", err)
 		response.Fatal(rsp, errors.Wrap(err, "cannot get provider config reference from input"))
 		return rsp, nil
 	}
-	f.log.Info("ProviderConfig", "providerConfig", providerConfig)
+	f.log.Debug("ProviderConfig", "providerConfig", providerConfig)
 
 	if domain, err = f.getStringFromPaved(oxr.Resource, input.Spec.DomainRef); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot get region from %q", input.Spec.RegionRef))
 		return rsp, nil
 	}
-	f.log.Info("Domain", "domain", domain)
+	f.log.Debug("Domain", "domain", domain)
 
 	if err = f.DiscoverHostedZone(domain, input.Spec.Tags, region, providerConfig, input.Spec.Route53HostedZonePatchTo, composed); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot discover hosted zone for domain %q", domain))
@@ -77,9 +76,9 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		return rsp, nil
 	}
 
-	key, err := f.ServiceAccountSecret(composed.DesiredComposite.Resource.GetNamespace(), composed.DesiredComposite.Resource.GetName())
+	key, err := f.ServiceAccountSecret(composed.DesiredComposite.Resource.GetLabels()["crossplane.io/claim-namespace"], composed.DesiredComposite.Resource.GetLabels()["crossplane.io/claim-name"])
 	if err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot get service account secret for domain %q", domain))
+		response.Fatal(rsp, errors.Wrapf(err, "cannot get service account secret"))
 		return rsp, nil
 	}
 
