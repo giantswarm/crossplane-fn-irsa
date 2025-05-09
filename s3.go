@@ -90,12 +90,12 @@ func digestOfKey(key *rsa.PrivateKey) (string, error) {
 	return keyID, nil
 }
 
-func GenerateKeysFile(key *rsa.PrivateKey) (*bytes.Reader, error) {
+func (f *Function) GenerateKeysFile(key *rsa.PrivateKey, patchTo string, composed *composite.Composition) error {
 	var alg jose.SignatureAlgorithm
 
 	kid, err := digestOfKey(key)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	var keys []jose.JSONWebKey
@@ -109,15 +109,17 @@ func GenerateKeysFile(key *rsa.PrivateKey) (*bytes.Reader, error) {
 	keyResponse := KeyResponse{Keys: keys}
 	byt, err := json.MarshalIndent(keyResponse, "", "    ")
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return bytes.NewReader(byt), nil
+
+	err = f.patchFieldValueToObject(patchTo, byt, composed.DesiredComposite.Resource)
+	return err
 }
 
-func ServiceAccountSecret(ctx context.Context, clusterNamespace, clusterName string) (*rsa.PrivateKey, error) {
+func (f *Function) ServiceAccountSecret(clusterNamespace, clusterName string) (*rsa.PrivateKey, error) {
 	oidcSecret := &v1.Secret{}
 	client, err := kclient.Client()
-	err = client.Get(ctx, types.NamespacedName{Namespace: clusterNamespace, Name: clusterName + "-sa"}, oidcSecret)
+	err = client.Get(context.Background(), types.NamespacedName{Namespace: clusterNamespace, Name: clusterName + "-sa"}, oidcSecret)
 	if err != nil {
 		return nil, err
 	}

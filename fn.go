@@ -77,6 +77,13 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		return rsp, nil
 	}
 
+	key, err := f.ServiceAccountSecret(composed.DesiredComposite.Resource.GetNamespace(), composed.DesiredComposite.Resource.GetName())
+
+	if err = f.GenerateKeysFile(key, input.Spec.S3KeysPatchTo, composed); err != nil {
+		response.Fatal(rsp, errors.Wrapf(err, "cannot generate keys file for domain %q", domain))
+		return rsp, nil
+	}
+
 	if err = composed.ToResponse(rsp); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot convert composition to response %T", rsp))
 		return
