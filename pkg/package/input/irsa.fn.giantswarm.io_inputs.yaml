@@ -43,6 +43,8 @@ spec:
             properties:
               domain:
                 type: string
+              irsaDomain:
+                type: string
               providerConfigRef:
                 description: ProviderConfigRef A path to the provider config in the
                   Claim
@@ -62,6 +64,7 @@ spec:
                 type: object
             required:
             - domain
+            - irsaDomain
             - providerConfigRef
             - regionRef
             - route53HostedZonePatchTo

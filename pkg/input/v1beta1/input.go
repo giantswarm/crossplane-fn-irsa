@@ -26,7 +26,10 @@ type Input struct {
 // Spec - Defines the spec given to this input type, providing the required, and optional elements that may be defined
 type Spec struct {
 	// +required
-	DomainRef string `json:"domain"`
+	DomainRef string `json:"domainRef"`
+
+	// +required
+	IrsaDomainRef string `json:"irsaDomainRef"`
 
 	// +optional
 	Tags map[string]string `json:"tags,omitempty"`

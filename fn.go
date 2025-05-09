@@ -28,6 +28,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		region         string
 		providerConfig string
 		domain         string
+		irsaDomain     string
 	)
 
 	oxr, err := request.GetObservedCompositeResource(req)
@@ -66,12 +67,18 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	}
 	f.log.Debug("Domain", "domain", domain)
 
+	if irsaDomain, err = f.getStringFromPaved(oxr.Resource, input.Spec.IrsaDomainRef); err != nil {
+		response.Fatal(rsp, errors.Wrapf(err, "cannot get region from %q", input.Spec.RegionRef))
+		return rsp, nil
+	}
+	f.log.Debug("IrsaDomain", "irsaDomain", irsaDomain)
+
 	if err = f.DiscoverHostedZone(domain, input.Spec.Tags, region, providerConfig, input.Spec.Route53HostedZonePatchTo, composed); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot discover hosted zone for domain %q", domain))
 		return rsp, nil
 	}
 
-	if err = f.GenerateDiscoveryFile(domain, composed.DesiredComposite.Resource.GetName(), region, input.Spec.S3DiscoveryPatchTo, composed); err != nil {
+	if err = f.GenerateDiscoveryFile(irsaDomain, composed.DesiredComposite.Resource.GetName(), region, input.Spec.S3DiscoveryPatchTo, composed); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot generate discovery file for domain %q", domain))
 		return rsp, nil
 	}
