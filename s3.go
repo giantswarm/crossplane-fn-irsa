@@ -119,6 +119,9 @@ func (f *Function) GenerateKeysFile(key *rsa.PrivateKey, patchTo string, compose
 func (f *Function) ServiceAccountSecret(clusterNamespace, clusterName string) (*rsa.PrivateKey, error) {
 	oidcSecret := &v1.Secret{}
 	client, err := kclient.Client()
+	if err != nil {
+		return nil, err
+	}
 	f.log.Debug("getting service account secret", "clusterNamespace", clusterNamespace, "clusterName", clusterName)
 	err = client.Get(context.Background(), types.NamespacedName{Namespace: clusterNamespace, Name: clusterName + "-sa"}, oidcSecret)
 	if err != nil {
