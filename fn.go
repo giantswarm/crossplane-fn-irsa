@@ -76,7 +76,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		return rsp, nil
 	}
 
-	key, err := f.ServiceAccountSecret(composed.DesiredComposite.Resource.GetLabels()["crossplane.io/claim-namespace"], composed.DesiredComposite.Resource.GetLabels()["crossplane.io/claim-name"])
+	key, err := f.ServiceAccountSecret(oxr.Resource.GetLabels()["crossplane.io/claim-namespace"], oxr.Resource.GetLabels()["crossplane.io/claim-name"])
 	if err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot get service account secret"))
 		return rsp, nil
