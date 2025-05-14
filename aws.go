@@ -9,11 +9,9 @@ import (
 	route53types "github.com/aws/aws-sdk-go-v2/service/route53/types"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
-	"github.com/crossplane/crossplane-runtime/pkg/fieldpath"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	xfnaws "github.com/giantswarm/xfnlib/pkg/auth/aws"
 	"github.com/giantswarm/xfnlib/pkg/composite"
-	"k8s.io/apimachinery/pkg/runtime"
 )
 
 type Route53Api interface {
@@ -64,19 +62,6 @@ var (
 		return xfnaws.Config(region, providerCfg, log)
 	}
 )
-
-func (f *Function) patchFieldValueToObject(fieldPath string, value any, to runtime.Object) (err error) {
-	var paved *fieldpath.Paved
-	if paved, err = fieldpath.PaveObject(to); err != nil {
-		return
-	}
-
-	if err = paved.SetValue(fieldPath, value); err != nil {
-		return
-	}
-
-	return runtime.DefaultUnstructuredConverter.FromUnstructured(paved.UnstructuredContent(), to)
-}
 
 func (f *Function) GetAccountId(region, pcr *string) (id string, err error) {
 	var (

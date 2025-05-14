@@ -116,3 +116,16 @@ func (f *Function) getStringFromPaved(req runtime.Object, ref string) (value str
 	value, err = paved.GetString(ref)
 	return
 }
+
+func (f *Function) patchFieldValueToObject(fieldPath string, value any, to runtime.Object) (err error) {
+	var paved *fieldpath.Paved
+	if paved, err = fieldpath.PaveObject(to); err != nil {
+		return
+	}
+
+	if err = paved.SetValue(fieldPath, value); err != nil {
+		return
+	}
+
+	return runtime.DefaultUnstructuredConverter.FromUnstructured(paved.UnstructuredContent(), to)
+}
