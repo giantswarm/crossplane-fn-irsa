@@ -29,33 +29,20 @@ type Spec struct {
 	DomainRef string `json:"domainRef"`
 
 	// +optional
-	IrsaDomainRef string `json:"irsaDomainRef"`
-
-	// +optional
-	Tags map[string]string `json:"tags,omitempty"`
-
-	//
-	// +optional
-	Route53HostedZonePatchTo string `json:"route53HostedZonePatchTo"`
-
-	//
-	// +required
-	S3KeysPatchTo string `json:"s3KeysPatchTo"`
+	Route53HostedZonePatchToRef string `json:"route53HostedZonePatchToRef"`
 
 	// +required
-	S3BucketName string `json:"s3BucketName"`
+	S3KeysPatchToRef string `json:"s3KeysPatchToRef"`
 
-	//
 	// +required
-	S3DiscoveryPatchTo string `json:"s3DiscoveryPatchTo"`
+	S3BucketNameRef string `json:"s3BucketNameRef"`
 
-	// RegionRef A path to the region in the Claim
-	//
+	// +required
+	S3DiscoveryPatchToRef string `json:"s3DiscoveryPatchToRef"`
+
 	// +required
 	RegionRef string `json:"regionRef"`
 
-	// ProviderConfigRef A path to the provider config in the Claim
-	//
 	// +required
 	ProviderConfigRef string `json:"providerConfigRef"`
 }

@@ -55,8 +55,8 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	}
 	f.log.Debug("Region", "region", region)
 
-	if S3BucketName, err = f.getStringFromPaved(oxr.Resource, input.Spec.S3BucketName); err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot get S3 bucket name from %q", input.Spec.S3BucketName))
+	if S3BucketName, err = f.getStringFromPaved(oxr.Resource, input.Spec.S3BucketNameRef); err != nil {
+		response.Fatal(rsp, errors.Wrapf(err, "cannot get S3 bucket name from %q", input.Spec.S3BucketNameRef))
 		return rsp, nil
 	}
 	f.log.Debug("S3BucketName", "S3BucketName", S3BucketName)
@@ -75,19 +75,15 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		}
 		f.log.Debug("Domain", "domain", domain)
 
-		if irsaDomain, err = f.getStringFromPaved(oxr.Resource, input.Spec.IrsaDomainRef); err != nil {
-			response.Fatal(rsp, errors.Wrapf(err, "cannot get region from %q", input.Spec.RegionRef))
-			return rsp, nil
-		}
-		f.log.Debug("IrsaDomain", "irsaDomain", irsaDomain)
+		irsaDomain = "irsa." + domain
 
-		if err = f.DiscoverHostedZone(domain, input.Spec.Tags, region, providerConfig, input.Spec.Route53HostedZonePatchTo, composed); err != nil {
+		if err = f.DiscoverHostedZone(domain, region, providerConfig, input.Spec.Route53HostedZonePatchToRef, composed); err != nil {
 			response.Fatal(rsp, errors.Wrapf(err, "cannot discover hosted zone for domain %q", domain))
 			return rsp, nil
 		}
 	}
 
-	if err = f.GenerateDiscoveryFile(irsaDomain, S3BucketName, region, input.Spec.S3DiscoveryPatchTo, composed); err != nil {
+	if err = f.GenerateDiscoveryFile(irsaDomain, S3BucketName, region, input.Spec.S3DiscoveryPatchToRef, composed); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot generate discovery file for domain %q", domain))
 		return rsp, nil
 	}
@@ -98,7 +94,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		return rsp, nil
 	}
 
-	if err = f.GenerateKeysFile(key, input.Spec.S3KeysPatchTo, composed); err != nil {
+	if err = f.GenerateKeysFile(key, input.Spec.S3KeysPatchToRef, composed); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot generate keys file for domain %q", domain))
 		return rsp, nil
 	}

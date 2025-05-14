@@ -109,14 +109,14 @@ func (f *Function) GetAccountId(region, pcr *string) (id string, err error) {
 	return
 }
 
-func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, region string, providerConfigRef string, patchTo string, composed *composite.Composition) (err error) {
+func (f *Function) DiscoverHostedZone(domain string, region string, providerConfigRef string, patchTo string, composed *composite.Composition) (err error) {
 	var (
 		cfg      aws.Config
 		services map[string]string
 		client   Route53Api
 	)
 
-	f.log.Debug("Discovering hosted zone", "domain", domain, "tags", tags)
+	f.log.Debug("Discovering hosted zone", "domain", domain)
 
 	if cfg, services, err = awsConfig(&region, &providerConfigRef, f.log); err != nil {
 		f.log.Info("Error loading aws config", "error", err)
@@ -154,47 +154,9 @@ func (f *Function) DiscoverHostedZone(domain string, tags map[string]string, reg
 		return err
 	}
 
-	if len(tags) > 0 {
-		var filteredHostedZones []route53types.HostedZone
-		for _, hz := range matchingHostedZones {
-			resourceId := *hz.Id
-
-			var tagsOutput *route53.ListTagsForResourceOutput
-			tagsOutput, err = GetTagsForResource(context.Background(), client, &route53.ListTagsForResourceInput{
-				ResourceType: route53types.TagResourceTypeHostedzone,
-				ResourceId:   &resourceId,
-			})
-			if err != nil {
-				f.log.Info("Error getting tags for hosted zone", "error", err, "hostedZoneId", resourceId)
-				continue
-			}
-
-			matches := true
-			for k, v := range tags {
-				found := false
-				for _, tag := range tagsOutput.ResourceTagSet.Tags {
-					if *tag.Key == k && *tag.Value == v {
-						found = true
-						break
-					}
-				}
-				if !found {
-					matches = false
-					break
-				}
-			}
-
-			if matches {
-				filteredHostedZones = append(filteredHostedZones, hz)
-			}
-		}
-
-		matchingHostedZones = filteredHostedZones
-
-		if len(matchingHostedZones) == 0 {
-			err = errors.New("no hosted zone found matching the domain and tags")
-			return err
-		}
+	if len(matchingHostedZones) > 1 {
+		err = errors.New("multiple hosted zones found matching the domain: " + domain)
+		return err
 	}
 
 	hostedZoneId := strings.TrimPrefix(*matchingHostedZones[0].Id, "/hostedzone/")
