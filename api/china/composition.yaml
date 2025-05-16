@@ -1,0 +1,164 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: irsa-composition
+spec:
+  compositeTypeRef:
+    apiVersion: crossplane.giantswarm.io/v1
+    kind: IRSA
+  mode: Pipeline
+  pipeline:
+  - step: irsa-discovery
+    functionRef:
+      name: function-irsa
+    input:
+      apiVersion: irsa.fn.giantswarm.io
+      kind: Input
+      metadata:
+        namespace: crossplane
+      spec:
+        regionRef: spec.region
+        providerConfigRef: spec.providerConfigRef
+        s3KeysPatchToRef: status.s3Keys
+        s3DiscoveryPatchToRef: status.s3Discovery
+        s3BucketNameRef: spec.bucketName
+  - step: patch-and-transform
+    functionRef:
+      name: function-patch-and-transform
+    input:
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+      - name: oidc-provider
+        base:
+          apiVersion: iam.aws.upbound.io/v1beta1
+          kind: OpenIDConnectProvider
+          spec:
+            forProvider:
+              clientIdList:
+                - sts.amazonaws.com.cn
+              thumbprintList:
+                - "9e99a48a9960b14926bb7f3b02e22da2b0ab7280"
+        patches:
+        - type: CombineFromComposite
+          toFieldPath: "spec.forProvider.url"
+          combine:
+            variables:
+              - fromFieldPath: spec.region
+              - fromFieldPath: status.s3BucketId
+            strategy: string
+            string:
+              fmt: https://s3.%s.amazonaws.com.cn/%s
+        - type: FromCompositeFieldPath
+          fromFieldPath: status.s3DomainName
+          toFieldPath: spec.forProvider.url
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+      
+      - name: s3-bucket
+        base:
+          apiVersion: s3.aws.upbound.io/v1beta1
+          kind: Bucket
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.bucketName
+          toFieldPath: metadata.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.arn
+          toFieldPath: status.s3BucketArn
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.id
+          toFieldPath: status.s3BucketId
+
+      - name: s3-bucket-ownership
+        base:
+          apiVersion: s3.aws.upbound.io/v1beta1
+          kind: BucketOwnershipControls
+          spec:
+            forProvider:
+              rule:
+                - objectOwnership: ObjectWriter
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.bucketName
+          toFieldPath: spec.forProvider.bucketRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+
+      - name: s3-bucket-policy
+        base:
+          apiVersion: s3.aws.upbound.io/v1beta1
+          kind: BucketPublicAccessBlock
+          spec:
+            forProvider:
+              blockPublicAcls: false
+              blockPublicPolicy: false
+              ignorePublicAcls: false
+              restrictPublicBuckets: false
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.bucketName
+          toFieldPath: spec.forProvider.bucketRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+
+      - name: s3-discovery
+        base:
+          apiVersion: s3.aws.upbound.io/v1beta1
+          kind: BucketObject
+          spec:
+            forProvider:
+              key: .well-known/openid-configuration
+              contentType: application/json
+              acl: public-read
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.bucketName
+          toFieldPath: spec.forProvider.bucketRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          toFieldPath: spec.forProvider.contentBase64
+          fromFieldPath: status.s3Discovery
+
+      - name: s3-keys
+        base:
+          apiVersion: s3.aws.upbound.io/v1beta1
+          kind: BucketObject
+          spec:
+            forProvider:
+              key: keys.json
+              contentType: application/json
+              acl: public-read
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.bucketName
+          toFieldPath: spec.forProvider.bucketRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          toFieldPath: spec.forProvider.contentBase64
+          fromFieldPath: status.s3Keys

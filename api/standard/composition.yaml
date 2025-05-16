@@ -1,0 +1,364 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: irsa-composition
+spec:
+  compositeTypeRef:
+    apiVersion: crossplane.giantswarm.io/v1
+    kind: IRSA
+  mode: Pipeline
+  pipeline:
+  - step: irsa-discovery
+    functionRef:
+      name: function-irsa
+    input:
+      apiVersion: irsa.fn.giantswarm.io
+      kind: Input
+      metadata:
+        namespace: crossplane
+      spec:
+        domainRef: spec.domain
+        regionRef: spec.region
+        providerConfigRef: spec.providerConfigRef
+        route53HostedZonePatchToRef: status.route53ZoneId
+        s3KeysPatchToRef: status.s3Keys
+        s3DiscoveryPatchToRef: status.s3Discovery
+        s3BucketNameRef: spec.bucketName
+  - step: patch-and-transform
+    functionRef:
+      name: function-patch-and-transform
+    input:
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+      - name: oidc-provider
+        base:
+          apiVersion: iam.aws.upbound.io/v1beta1
+          kind: OpenIDConnectProvider
+          spec:
+            forProvider:
+              clientIdList:
+                - sts.amazonaws.com
+              thumbprintList:
+                - "06b25927c42a721631c1efd9431e648fa62e1e39"
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.domain
+          toFieldPath: spec.forProvider.url
+          transforms:
+            - type: string
+              string:
+                fmt: "https://irsa.%s"
+                type: Format
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+      
+      - name: s3-bucket
+        base:
+          apiVersion: s3.aws.upbound.io/v1beta1
+          kind: Bucket
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.bucketName
+          toFieldPath: metadata.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.arn
+          toFieldPath: status.s3BucketArn
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.id
+          toFieldPath: status.s3BucketId
+        
+      - name: s3-discovery
+        base:
+          apiVersion: s3.aws.upbound.io/v1beta1
+          kind: BucketObject
+          spec:
+            forProvider:
+              key: .well-known/openid-configuration
+              contentType: application/json
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.bucketName
+          toFieldPath: spec.forProvider.bucketRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          toFieldPath: spec.forProvider.contentBase64
+          fromFieldPath: status.s3Discovery
+
+      - name: s3-keys
+        base:
+          apiVersion: s3.aws.upbound.io/v1beta1
+          kind: BucketObject
+          spec:
+            forProvider:
+              key: keys.json
+              contentType: application/json
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.bucketName
+          toFieldPath: spec.forProvider.bucketRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          toFieldPath: spec.forProvider.contentBase64
+          fromFieldPath: status.s3Keys
+
+      - name: cloudfront-oai
+        base:
+          apiVersion: cloudfront.aws.upbound.io/v1beta1
+          kind: OriginAccessIdentity
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.name
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-irsa-s3-origin-access-identity"
+                type: Format
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.name
+          toFieldPath: spec.forProvider.comment
+          transforms:
+            - type: string
+              string:
+                fmt: "%s OAI for IRSA S3 bucket"
+                type: Format
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.iamArn
+          toFieldPath: status.oaiArn
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.cloudfrontAccessIdentityPath
+          toFieldPath: status.oaiIdPath
+
+      - name: s3-bucket-policy
+        base:
+          apiVersion: s3.aws.upbound.io/v1beta1
+          kind: BucketPolicy
+        patches:
+        - type: CombineFromComposite
+          toFieldPath: "spec.forProvider.policy"
+          combine:
+            variables:
+              - fromFieldPath: status.oaiArn
+              - fromFieldPath: status.s3BucketArn
+            strategy: string
+            string:
+              fmt: |
+                {
+                    "Version": "2012-10-17",
+                    "Id": "PolicyForCloudFrontPrivateContent",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": "%s"
+                            },
+                            "Action": "s3:GetObject",
+                            "Resource": "%s/*"
+                        }
+                    ]
+                }
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.bucketName
+          toFieldPath: spec.forProvider.bucketRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+
+      - name: acm-certificate
+        base:
+          apiVersion: acm.aws.upbound.io/v1beta1
+          kind: Certificate
+          spec:
+            forProvider:
+              validationMethod: DNS
+              region: us-east-1
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.name
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-irsa-cloudfront-certificate"
+                type: Format
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.domain
+          toFieldPath: spec.forProvider.domainName
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.arn
+          toFieldPath: status.certificateArn
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.domainValidationOptions[0].resourceRecordName
+          toFieldPath: status.certificateValidation.recordName
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.domainValidationOptions[0].resourceRecordValue
+          toFieldPath: status.certificateValidation.recordValue
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.domainValidationOptions[0].resourceRecordType
+          toFieldPath: status.certificateValidation.recordType
+      
+      - name: irsa-route53-record
+        base:
+          apiVersion: route53.aws.upbound.io/v1beta1
+          kind: Record
+          spec:
+            forProvider:
+              type: CNAME
+              ttl: 300
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.domain
+          toFieldPath: spec.forProvider.name
+          transforms:
+            - type: string
+              string:
+                fmt: "irsa.%s"
+                type: Format
+        - type: FromCompositeFieldPath
+          fromFieldPath: status.cloudfrontDomain
+          toFieldPath: spec.forProvider.records[0]
+        - type: FromCompositeFieldPath
+          fromFieldPath: status.route53ZoneId
+          toFieldPath: spec.forProvider.zoneId
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+
+      - name: validation-route53-record
+        base:
+          apiVersion: route53.aws.upbound.io/v1beta1
+          kind: Record
+          spec:
+            forProvider:
+              type: CNAME
+              ttl: 300
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: status.certificateValidation.recordName
+          toFieldPath: spec.forProvider.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: status.certificateValidation.recordValue
+          toFieldPath: spec.forProvider.records[0]
+        - type: FromCompositeFieldPath
+          fromFieldPath: status.certificateValidation.recordType
+          toFieldPath: spec.forProvider.type
+        - type: FromCompositeFieldPath
+          fromFieldPath: status.route53ZoneId
+          toFieldPath: spec.forProvider.zoneId
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+
+      - name: cloudfront-distribution
+        base:
+          apiVersion: cloudfront.aws.upbound.io/v1beta2
+          kind: Distribution
+          spec:
+            forProvider:
+              enabled: true
+              defaultRootObject: "index.html"
+              origin:
+                - domainName: "" # Will be patched with S3 bucket regional domain name
+                  originId: "s3-origin" # Unique ID for this origin
+                  s3OriginConfig:
+                    originAccessIdentity: "" # Will be patched with OAI path
+              restrictions:
+                geoRestriction:
+                  restrictionType: none
+              defaultCacheBehavior:
+                allowedMethods:
+                  - GET
+                  - HEAD
+                cachedMethods:
+                  - GET
+                  - HEAD
+                viewerProtocolPolicy: redirect-to-https
+                forwardedValues:
+                  cookies:
+                    forward: none
+              viewerCertificate:
+                sslSupportMethod: sni-only
+                minimumProtocolVersion: TLSv1.2_2021
+        patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.name
+          toFieldPath: metadata.name
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-irsa-cloudfront-distribution"
+                type: Format
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.domain
+          toFieldPath: spec.forProvider.aliases[0]
+          transforms:
+            - type: string
+              string:
+                fmt: "irsa.%s"
+                type: Format
+        - type: CombineFromComposite
+          combine:
+            variables:
+              - fromFieldPath: spec.bucketName
+              - fromFieldPath: spec.region
+            strategy: string
+            string:
+              fmt: "%s.s3.%s.amazonaws.com"
+          toFieldPath: spec.forProvider.origin[0].domainName
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.bucketName
+          toFieldPath: spec.forProvider.origin[0].originId
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.bucketName
+          toFieldPath: spec.forProvider.defaultCacheBehavior.targetOriginId
+        - type: FromCompositeFieldPath
+          fromFieldPath: status.oaiIdPath
+          toFieldPath: spec.forProvider.origin[0].s3OriginConfig.originAccessIdentity
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.providerConfigRef
+          toFieldPath: spec.providerConfigRef.name
+        - type: FromCompositeFieldPath
+          fromFieldPath: spec.region
+          toFieldPath: spec.forProvider.region
+        - type: FromCompositeFieldPath
+          fromFieldPath: status.certificateArn
+          toFieldPath: spec.forProvider.viewerCertificate.acmCertificateArn
+        - type: ToCompositeFieldPath
+          fromFieldPath: status.atProvider.domainName
+          toFieldPath: status.cloudfrontDomain

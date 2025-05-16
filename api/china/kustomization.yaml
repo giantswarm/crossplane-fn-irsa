@@ -1,0 +1,3 @@
+resources:
+- composition.yaml
+- ../common/composite_definition.yaml

@@ -1,0 +1,86 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: irsas.crossplane.giantswarm.io
+spec:
+  group: crossplane.giantswarm.io
+  names:
+    kind: IRSA
+    plural: irsas
+  claimNames:
+    kind: IRSAClaim
+    plural: irsaclaims
+  versions:
+    - name: v1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: "Base name used for resources"
+                bucketName:
+                  type: string
+                  description: "Name of the S3 bucket"
+                domain:
+                  type: string
+                  description: "Domain for the cluster"
+                providerConfigRef:
+                  type: string
+                  description: "Name of the AWS provider configuration"
+                region:
+                  type: string
+                  description: "AWS region where resources should be created"
+                  default: "us-east-1"
+              required:
+                - name
+                - providerConfigRef
+                - bucketName
+                - region
+            status:
+              type: object
+              properties:
+                s3BucketArn:
+                  type: string
+                  description: "ARN of the S3 bucket"
+                s3BucketId:
+                  type: string
+                  description: "ID of the S3 bucket"
+                oaiArn:
+                  type: string
+                  description: "ARN of the OAI"
+                oaiIdPath:
+                  type: string
+                  description: "ID of the OAI"
+                cloudfrontDomain:
+                  type: string
+                  description: "Cloudfront domain"
+                route53ZoneId:
+                  type: string
+                  description: "Route53 zone ID"
+                s3Keys:
+                  type: string
+                  description: "S3 keys file"
+                s3Discovery:
+                  type: string
+                  description: "S3 discovery file"
+                certificateArn:
+                  type: string
+                  description: "ARN of the ACM certificate"
+                certificateValidation:
+                  type: object
+                  properties:
+                    recordName:
+                      type: string
+                      description: "Name of the record"
+                    recordValue:
+                      type: string
+                      description: "Value of the record"
+                    recordType:
+                      type: string
+                      description: "Type of the record"
