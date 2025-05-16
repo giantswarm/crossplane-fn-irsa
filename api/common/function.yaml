@@ -2,7 +2,7 @@
 apiVersion: pkg.crossplane.io/v1beta1
 kind: Function
 metadata:
-  name: function-network-discovery
+  name: function-irsa
 spec:
   package: gsoci.azurecr.io/giantswarm/crossplane-fn-irsa:v0.0.22-dev
   runtimeConfigRef:
