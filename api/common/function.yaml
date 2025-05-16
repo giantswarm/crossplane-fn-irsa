@@ -1,0 +1,10 @@
+---
+apiVersion: pkg.crossplane.io/v1beta1
+kind: Function
+metadata:
+  name: function-network-discovery
+spec:
+  package: gsoci.azurecr.io/giantswarm/crossplane-fn-irsa:v0.0.22-dev
+  runtimeConfigRef:
+    name: xfn-irsa
+  skipDependencyResolution: true
