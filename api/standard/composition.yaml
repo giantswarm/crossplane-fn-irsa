@@ -214,6 +214,11 @@ spec:
         - type: FromCompositeFieldPath
           fromFieldPath: spec.domain
           toFieldPath: spec.forProvider.domainName
+          transforms:
+            - type: string
+              string:
+                fmt: "irsa.%s"
+                type: Format
         - type: ToCompositeFieldPath
           fromFieldPath: status.atProvider.arn
           toFieldPath: status.certificateArn
