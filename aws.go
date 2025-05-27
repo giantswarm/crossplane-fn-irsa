@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -278,16 +277,7 @@ func (f *Function) importOpenIdProvider(domain string, region string, providerCo
 
 	var matchingProviderArn string
 	for _, providerArn := range providers.OpenIDConnectProviderList {
-		var provider *iam.GetOpenIDConnectProviderOutput
-		provider, err = client.GetOpenIDConnectProvider(context.Background(), &iam.GetOpenIDConnectProviderInput{
-			OpenIDConnectProviderArn: providerArn.Arn,
-		})
-		if err != nil {
-			f.log.Info("Error getting OpenID Connect provider details", "arn", *providerArn.Arn, "error", err)
-			continue
-		}
-
-		if *provider.Url == fmt.Sprintf("https://%s", domain) {
+		if strings.Contains(*providerArn.Arn, domain) {
 			matchingProviderArn = *providerArn.Arn
 			break
 		}
