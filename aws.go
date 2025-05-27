@@ -188,7 +188,7 @@ func (f *Function) DiscoverHostedZone(domain string, region string, providerConf
 	return err
 }
 
-func (f *Function) importDistribution(domain string, composed *composite.Composition) (err error) {
+func (f *Function) importDistribution(domain string, region string, providerConfigRef string, composed *composite.Composition) (err error) {
 	var (
 		cfg      aws.Config
 		services map[string]string
@@ -197,7 +197,7 @@ func (f *Function) importDistribution(domain string, composed *composite.Composi
 
 	f.log.Debug("Importing CloudFront distribution", "domain", domain)
 
-	if cfg, services, err = awsConfig(nil, nil, f.log); err != nil {
+	if cfg, services, err = awsConfig(&region, &providerConfigRef, f.log); err != nil {
 		f.log.Info("Error loading aws config", "error", err)
 		err = errors.Wrap(err, "failed to load aws config")
 		return err
@@ -246,7 +246,7 @@ func (f *Function) importDistribution(domain string, composed *composite.Composi
 	return err
 }
 
-func (f *Function) importOpenIdProvider(domain string, composed *composite.Composition) (err error) {
+func (f *Function) importOpenIdProvider(domain string, region string, providerConfigRef string, composed *composite.Composition) (err error) {
 	var (
 		cfg      aws.Config
 		services map[string]string
@@ -255,7 +255,7 @@ func (f *Function) importOpenIdProvider(domain string, composed *composite.Compo
 
 	f.log.Debug("Importing OpenID Connect provider", "domain", domain)
 
-	if cfg, services, err = awsConfig(nil, nil, f.log); err != nil {
+	if cfg, services, err = awsConfig(&region, &providerConfigRef, f.log); err != nil {
 		f.log.Info("Error loading aws config", "error", err)
 		err = errors.Wrap(err, "failed to load aws config")
 		return err
