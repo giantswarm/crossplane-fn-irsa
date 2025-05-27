@@ -53,7 +53,10 @@ spec:
         - type: FromCompositeFieldPath
           fromFieldPath: spec.providerConfigRef
           toFieldPath: spec.providerConfigRef.name
-      
+        - type: FromCompositeFieldPath
+          fromFieldPath: status.importResources.openIdProviderArn
+          toFieldPath: metadata.annotations[crossplane.io/external-name]
+
       - name: s3-bucket
         base:
           apiVersion: s3.aws.upbound.io/v1beta1
@@ -140,10 +143,6 @@ spec:
               string:
                 fmt: "%s OAI for IRSA S3 bucket"
                 type: Format
-
-        - type: FromCompositeFieldPath
-          fromFieldPath: status.importResources.openIdProviderArn
-          toFieldPath: metadata.annotations[crossplane.io/external-name]
         - type: FromCompositeFieldPath
           fromFieldPath: spec.providerConfigRef
           toFieldPath: spec.providerConfigRef.name
