@@ -140,6 +140,10 @@ spec:
               string:
                 fmt: "%s OAI for IRSA S3 bucket"
                 type: Format
+
+        - type: FromCompositeFieldPath
+          fromFieldPath: status.importResources.openIdProviderArn
+          toFieldPath: metadata.annotations[crossplane.io/external-name]
         - type: FromCompositeFieldPath
           fromFieldPath: spec.providerConfigRef
           toFieldPath: spec.providerConfigRef.name
@@ -238,6 +242,7 @@ spec:
           kind: Record
           spec:
             forProvider:
+              allowOverwrite: true
               type: CNAME
               ttl: 300
         patches:
@@ -268,6 +273,7 @@ spec:
           kind: Record
           spec:
             forProvider:
+              allowOverwrite: true
               type: CNAME
               ttl: 300
         patches:
@@ -346,6 +352,9 @@ spec:
             string:
               fmt: "%s.s3.%s.amazonaws.com"
           toFieldPath: spec.forProvider.origin[0].domainName
+        - type: FromCompositeFieldPath
+          fromFieldPath: status.importResources.cloudfrontDistributionId
+          toFieldPath: metadata.annotations[crossplane.io/external-name]
         - type: FromCompositeFieldPath
           fromFieldPath: spec.bucketName
           toFieldPath: spec.forProvider.origin[0].originId

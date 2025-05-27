@@ -5,6 +5,8 @@ go 1.24.0
 require (
 	github.com/alecthomas/kong v0.9.0
 	github.com/aws/aws-sdk-go-v2 v1.36.3
+	github.com/aws/aws-sdk-go-v2/service/cloudfront v1.36.3
+	github.com/aws/aws-sdk-go-v2/service/iam v1.36.3
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.51.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.33.19
 	github.com/crossplane/crossplane-runtime v1.19.0
@@ -54,6 +56,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mailru/easyjson v0.9.0 // indirect

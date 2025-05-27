@@ -72,6 +72,15 @@ spec:
                 certificateArn:
                   type: string
                   description: "ARN of the ACM certificate"
+                importResources:
+                  type: object
+                  properties:
+                    openIdProviderArn:
+                      type: string
+                      description: "ARN of the S3 bucket"
+                    cloudfrontDistributionId:
+                      type: string
+                      description: "ID of the Cloudfront distribution"
                 certificateValidation:
                   type: object
                   properties:

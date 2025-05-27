@@ -99,6 +99,16 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 		return rsp, nil
 	}
 
+	if err = f.importDistribution(irsaDomain, composed); err != nil {
+		response.Fatal(rsp, errors.Wrapf(err, "cannot generate import resources for domain %q", domain))
+		return rsp, nil
+	}
+
+	if err = f.importOpenIdProvider(irsaDomain, composed); err != nil {
+		response.Fatal(rsp, errors.Wrapf(err, "cannot generate import resources for domain %q", domain))
+		return rsp, nil
+	}
+
 	if err = composed.ToResponse(rsp); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot convert composition to response %T", rsp))
 		return
