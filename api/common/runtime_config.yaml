@@ -10,6 +10,8 @@ spec:
         spec:
           containers:
             - name: package-runtime
+              args:
+                - "--debug"
               volumeMounts:
                 - mountPath: /var/run/secrets/eks.amazonaws.com/serviceaccount
                   name: aws-iam-token
