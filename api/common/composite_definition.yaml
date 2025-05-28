@@ -60,9 +60,6 @@ spec:
                 cloudfrontDomain:
                   type: string
                   description: "Cloudfront domain"
-                route53ZoneId:
-                  type: string
-                  description: "Route53 zone ID"
                 s3Keys:
                   type: string
                   description: "S3 keys file"
@@ -75,6 +72,9 @@ spec:
                 importResources:
                   type: object
                   properties:
+                    route53ZoneId:
+                      type: string
+                      description: "Route53 zone ID"
                     openIdProviderArn:
                       type: string
                       description: "ARN of the S3 bucket"

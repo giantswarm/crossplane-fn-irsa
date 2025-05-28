@@ -260,7 +260,7 @@ spec:
           fromFieldPath: status.cloudfrontDomain
           toFieldPath: spec.forProvider.records[0]
         - type: FromCompositeFieldPath
-          fromFieldPath: status.route53ZoneId
+          fromFieldPath: status.importResources.route53ZoneId
           toFieldPath: spec.forProvider.zoneId
         - type: FromCompositeFieldPath
           fromFieldPath: spec.region
@@ -289,7 +289,7 @@ spec:
           fromFieldPath: status.certificateValidation.recordType
           toFieldPath: spec.forProvider.type
         - type: FromCompositeFieldPath
-          fromFieldPath: status.route53ZoneId
+          fromFieldPath: status.importResources.route53ZoneId
           toFieldPath: spec.forProvider.zoneId
         - type: FromCompositeFieldPath
           fromFieldPath: spec.region

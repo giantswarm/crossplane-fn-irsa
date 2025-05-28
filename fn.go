@@ -81,6 +81,16 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 			response.Fatal(rsp, errors.Wrapf(err, "cannot discover hosted zone for domain %q", domain))
 			return rsp, nil
 		}
+
+		if err = f.DiscoverDistribution(irsaDomain, region, providerConfig, composed); err != nil {
+			response.Fatal(rsp, errors.Wrapf(err, "cannot discover distribution resources for domain %q", domain))
+			return rsp, nil
+		}
+
+		if err = f.DiscoverOpenIdProvider(irsaDomain, region, providerConfig, composed); err != nil {
+			response.Fatal(rsp, errors.Wrapf(err, "cannot discover open id provider for domain %q", domain))
+			return rsp, nil
+		}
 	}
 
 	if err = f.GenerateDiscoveryFile(irsaDomain, S3BucketName, region, input.Spec.S3DiscoveryPatchToRef, composed); err != nil {
@@ -96,16 +106,6 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 
 	if err = f.GenerateKeysFile(key, input.Spec.S3KeysPatchToRef, composed); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot generate keys file for domain %q", domain))
-		return rsp, nil
-	}
-
-	if err = f.importDistribution(irsaDomain, region, providerConfig, composed); err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot generate import resources for domain %q", domain))
-		return rsp, nil
-	}
-
-	if err = f.importOpenIdProvider(irsaDomain, region, providerConfig, composed); err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot generate import resources for domain %q", domain))
 		return rsp, nil
 	}
 

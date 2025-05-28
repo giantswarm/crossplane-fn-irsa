@@ -187,17 +187,17 @@ func (f *Function) DiscoverHostedZone(domain string, region string, providerConf
 	return err
 }
 
-func (f *Function) importDistribution(domain string, region string, providerConfigRef string, composed *composite.Composition) (err error) {
+func (f *Function) DiscoverDistribution(domain string, region string, providerConfigRef string, composed *composite.Composition) (err error) {
 	var (
 		cfg      aws.Config
 		services map[string]string
 		client   CloudFrontApi
 	)
 
-	f.log.Debug("Importing CloudFront distribution", "domain", domain)
+	f.log.Debug("Discovering CloudFront distribution", "domain", domain, "region", region)
 
 	if cfg, services, err = awsConfig(&region, &providerConfigRef, f.log); err != nil {
-		f.log.Info("Error loading aws config", "error", err)
+		f.log.Info("Failed to load AWS config", "error", err, "region", region)
 		err = errors.Wrap(err, "failed to load aws config")
 		return err
 	}
@@ -206,6 +206,7 @@ func (f *Function) importDistribution(domain string, region string, providerConf
 	var ok bool
 	if _, ok = services["cloudfront"]; ok {
 		ep = services["cloudfront"]
+		f.log.Debug("Using custom CloudFront endpoint", "endpoint", ep)
 	}
 
 	client = getCloudFrontClient(cfg, ep)
@@ -213,20 +214,21 @@ func (f *Function) importDistribution(domain string, region string, providerConf
 	var distributions *cloudfront.ListDistributionsOutput
 	distributions, err = client.ListDistributions(context.Background(), &cloudfront.ListDistributionsInput{})
 	if err != nil {
-		f.log.Info("Error listing distributions", "error", err)
+		f.log.Info("Failed to list CloudFront distributions", "error", err)
 		return err
 	}
+
+	f.log.Debug("Found distributions", "count", len(distributions.DistributionList.Items))
 
 	var matchingDistributions []cloudfronttypes.DistributionSummary
 	for _, dist := range distributions.DistributionList.Items {
 		for _, alias := range dist.Aliases.Items {
 			if alias == domain {
 				matchingDistributions = append(matchingDistributions, dist)
+				f.log.Debug("Found matching distribution", "distributionId", dist.Id, "alias", alias)
 			}
 		}
 	}
-
-	f.log.Debug("matching distributions", "matchingDistributions", matchingDistributions)
 
 	if len(matchingDistributions) == 0 {
 		f.log.Debug("No matching distribution found", "domain", domain)
@@ -235,27 +237,33 @@ func (f *Function) importDistribution(domain string, region string, providerConf
 
 	if len(matchingDistributions) > 1 {
 		err = errors.New("multiple distributions found matching the domain: " + domain)
+		f.log.Info("Multiple matching distributions found", "error", err, "domain", domain, "count", len(matchingDistributions))
 		return err
 	}
 
-	distributionId := *matchingDistributions[0].Id
-	f.log.Debug("Found distribution", "distributionId", distributionId)
+	distributionId := matchingDistributions[0].Id
+	f.log.Info("Found matching distribution", "distributionId", distributionId, "domain", domain)
 
 	err = f.patchFieldValueToObject("status.importResources.cloudfrontDistributionId", distributionId, composed.DesiredComposite.Resource)
-	return err
+	if err != nil {
+		f.log.Info("Failed to patch distribution ID", "error", err, "distributionId", distributionId)
+		return err
+	}
+
+	return nil
 }
 
-func (f *Function) importOpenIdProvider(domain string, region string, providerConfigRef string, composed *composite.Composition) (err error) {
+func (f *Function) DiscoverOpenIdProvider(domain string, region string, providerConfigRef string, composed *composite.Composition) (err error) {
 	var (
 		cfg      aws.Config
 		services map[string]string
 		client   IamApi
 	)
 
-	f.log.Debug("Importing OpenID Connect provider", "domain", domain)
+	f.log.Debug("Discovering OpenID Connect provider", "domain", domain, "region", region)
 
 	if cfg, services, err = awsConfig(&region, &providerConfigRef, f.log); err != nil {
-		f.log.Info("Error loading aws config", "error", err)
+		f.log.Info("Failed to load AWS config", "error", err, "region", region)
 		err = errors.Wrap(err, "failed to load aws config")
 		return err
 	}
@@ -264,6 +272,7 @@ func (f *Function) importOpenIdProvider(domain string, region string, providerCo
 	var ok bool
 	if _, ok = services["iam"]; ok {
 		ep = services["iam"]
+		f.log.Debug("Using custom IAM endpoint", "endpoint", ep)
 	}
 
 	client = getIamClient(cfg, ep)
@@ -271,25 +280,33 @@ func (f *Function) importOpenIdProvider(domain string, region string, providerCo
 	var providers *iam.ListOpenIDConnectProvidersOutput
 	providers, err = client.ListOpenIDConnectProviders(context.Background(), &iam.ListOpenIDConnectProvidersInput{})
 	if err != nil {
-		f.log.Info("Error listing OpenID Connect providers", "error", err)
+		f.log.Info("Failed to list OpenID Connect providers", "error", err)
 		return err
 	}
+
+	f.log.Debug("Found OpenID Connect providers", "count", len(providers.OpenIDConnectProviderList))
 
 	var matchingProviderArn string
 	for _, providerArn := range providers.OpenIDConnectProviderList {
 		if strings.Contains(*providerArn.Arn, domain) {
 			matchingProviderArn = *providerArn.Arn
+			f.log.Debug("Found matching provider", "arn", matchingProviderArn)
 			break
 		}
 	}
-
-	f.log.Debug("matching provider", "arn", matchingProviderArn)
 
 	if matchingProviderArn == "" {
 		f.log.Debug("No matching provider found", "domain", domain)
 		return nil
 	}
 
+	f.log.Info("Found matching OpenID Connect provider", "arn", matchingProviderArn, "domain", domain)
+
 	err = f.patchFieldValueToObject("status.importResources.openIdProviderArn", matchingProviderArn, composed.DesiredComposite.Resource)
-	return err
+	if err != nil {
+		f.log.Info("Failed to patch provider ARN", "error", err, "arn", matchingProviderArn)
+		return err
+	}
+
+	return nil
 }
