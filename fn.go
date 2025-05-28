@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"strings"
 
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/crossplane/crossplane-runtime/pkg/fieldpath"
@@ -86,12 +87,19 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 			response.Fatal(rsp, errors.Wrapf(err, "cannot discover distribution resources for domain %q", domain))
 			return rsp, nil
 		}
+	}
 
+	// if in china regions
+	if strings.HasPrefix(region, "cn-") {
+		if err = f.DiscoverOpenIdProvider(S3BucketName, region, providerConfig, composed); err != nil {
+			response.Fatal(rsp, errors.Wrapf(err, "cannot discover open id provider for domain %q", domain))
+			return rsp, nil
+		}
+	} else {
 		if err = f.DiscoverOpenIdProvider(irsaDomain, region, providerConfig, composed); err != nil {
 			response.Fatal(rsp, errors.Wrapf(err, "cannot discover open id provider for domain %q", domain))
 			return rsp, nil
 		}
-	}
 
 	if err = f.GenerateDiscoveryFile(irsaDomain, S3BucketName, region, input.Spec.S3DiscoveryPatchToRef, composed); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot generate discovery file for domain %q", domain))
