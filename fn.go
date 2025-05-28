@@ -100,6 +100,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 			response.Fatal(rsp, errors.Wrapf(err, "cannot discover open id provider for domain %q", domain))
 			return rsp, nil
 		}
+	}
 
 	if err = f.GenerateDiscoveryFile(irsaDomain, S3BucketName, region, input.Spec.S3DiscoveryPatchToRef, composed); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot generate discovery file for domain %q", domain))
