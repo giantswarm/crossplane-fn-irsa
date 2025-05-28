@@ -20,7 +20,7 @@ spec:
         domainRef: spec.domain
         regionRef: spec.region
         providerConfigRef: spec.providerConfigRef
-        route53HostedZonePatchToRef: status.route53ZoneId
+        route53HostedZonePatchToRef: status.importResources.route53ZoneId
         s3KeysPatchToRef: status.s3Keys
         s3DiscoveryPatchToRef: status.s3Discovery
         s3BucketNameRef: spec.bucketName
