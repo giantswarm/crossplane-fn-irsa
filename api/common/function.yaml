@@ -4,7 +4,7 @@ kind: Function
 metadata:
   name: function-irsa
 spec:
-  package: gsoci.azurecr.io/giantswarm/crossplane-fn-irsa:v0.0.25-dev
+  package: gsoci.azurecr.io/giantswarm/crossplane-fn-irsa:v0.0.26-dev
   runtimeConfigRef:
     name: xfn-irsa
   skipDependencyResolution: true
