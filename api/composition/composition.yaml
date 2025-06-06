@@ -54,8 +54,10 @@ spec:
           composition_name = oxr?.metadata?.name or ""
           region        = oxr?.spec?.region or ""
           bucket_name   = oxr?.spec?.bucketName or ""
-          domain        = oxr?.spec?.domain or "https://s3.${region}.amazonaws.com.cn/${bucket_name}"
+          domain        = oxr?.spec?.domain or ""
           provider_cfg  = oxr?.spec?.providerConfigRef or ""
+          # Whether the deployment region is in mainland China (e.g. cn-north-1, cn-northwest-1)
+          is_china_region = region.startswith("cn-")
 
           # ---------------------------------------------------------------------------
           # Existing resources status
@@ -68,7 +70,15 @@ spec:
           # Managed resources
           # ---------------------------------------------------------------------------
           
-          # OpenID Connect Provider          
+          # OpenID Connect Provider
+          _oidc_client_id_list = ["sts.amazonaws.com"]
+          _oidc_thumbprint_list = ["06b25927c42a721631c1efd9431e648fa62e1e39"]
+          _oidc_url = "https://irsa.${domain}"
+          if is_china_region:
+            _oidc_client_id_list = ["sts.amazonaws.com.cn"]
+            _oidc_thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
+            _oidc_url = "https://s3.${region}.amazonaws.com.cn/${bucket_name}"
+
           _oidc_provider = {
               apiVersion = "iam.aws.upbound.io/v1beta1"
               kind       = "OpenIDConnectProvider"
@@ -77,9 +87,9 @@ spec:
               spec = {
                   providerConfigRef.name = provider_cfg
                   forProvider = {
-                      url            = "https://irsa.${domain}"
-                      clientIdList   = ["sts.amazonaws.com"]
-                      thumbprintList = ["06b25927c42a721631c1efd9431e648fa62e1e39"]
+                      url            = _oidc_url
+                      clientIdList   = _oidc_client_id_list
+                      thumbprintList = _oidc_thumbprint_list
                   }
               }
           }
@@ -133,37 +143,67 @@ spec:
               }
           }
 
-          # S3 Bucket Policy (depends on OAI and bucket status)
-          oai_arn     = option("params")?.ocds?[oai_name]?.Resource?.status?.atProvider?.iamArn or ""
-          bucket_arn  = option("params")?.ocds?[bucket_name]?.Resource?.status?.atProvider?.arn or ""
-          _policy_json = ""
-          if oai_arn != "" and bucket_arn != "":
-            _policy_json = """{
-                \"Version\": \"2012-10-17\",
-                \"Id\": \"PolicyForCloudFrontPrivateContent\",
-                \"Statement\": [
-                    {
-                        \"Effect\": \"Allow\",
-                        \"Principal\": {\"AWS\": \"${oai_arn}\"},
-                        \"Action\": \"s3:GetObject\",
-                        \"Resource\": \"${bucket_arn}/*\"
-                    }
-                ]
-            }"""
+          if not is_china_region:
+            # S3 Bucket Policy (depends on OAI and bucket status)
+            oai_arn     = option("params")?.ocds?[oai_name]?.Resource?.status?.atProvider?.iamArn or ""
+            bucket_arn  = option("params")?.ocds?[bucket_name]?.Resource?.status?.atProvider?.arn or ""
+            _policy_json = ""
+            if oai_arn != "" and bucket_arn != "":
+                _policy_json = """{
+                    \"Version\": \"2012-10-17\",
+                    \"Id\": \"PolicyForCloudFrontPrivateContent\",
+                    \"Statement\": [
+                        {
+                            \"Effect\": \"Allow\",
+                            \"Principal\": {\"AWS\": \"${oai_arn}\"},
+                            \"Action\": \"s3:GetObject\",
+                            \"Resource\": \"${bucket_arn}/*\"
+                        }
+                    ]
+                }"""
 
-          bucket_policy = {
+            bucket_policy = {
+                apiVersion = "s3.aws.upbound.io/v1beta1"
+                kind       = "BucketPolicy"
+                metadata.name = "${composition_name}-policy"
+                spec = {
+                    providerConfigRef.name = provider_cfg
+                    forProvider = {
+                        bucketRef.name = bucket_name
+                        region         = region
+                        policy         = _policy_json
+                    }
+                }
+            }
+          else:
+            s3_bucket_public_access_block = {
               apiVersion = "s3.aws.upbound.io/v1beta1"
-              kind       = "BucketPolicy"
-              metadata.name = "${composition_name}-policy"
+              kind       = "BucketPublicAccessBlock"
+              metadata.name = "${composition_name}-public-access-block"
               spec = {
-                  providerConfigRef.name = provider_cfg
-                  forProvider = {
-                      bucketRef.name = bucket_name
-                      region         = region
-                      policy         = _policy_json
-                  }
+                providerConfigRef.name = provider_cfg
+                forProvider = {
+                  blockPublicAcls: False
+                  blockPublicPolicy: False
+                  ignorePublicAcls: False
+                  restrictPublicBuckets: False
+                }
               }
-          }
+            }
+
+            s3_bucket_ownership = {
+              apiVersion = "s3.aws.upbound.io/v1beta1"
+              kind       = "BucketOwnershipControls"
+              metadata.name = "${composition_name}-ownership"
+              spec = {
+                providerConfigRef.name = provider_cfg
+                forProvider = {
+                  rule = {
+                    objectOwnership = "ObjectWriter"
+                  }
+                }
+              }
+            }
 
           # CloudFront Origin Access Identity (OAI)
           oai_name = "${composition_name}-irsa-s3-origin-access-identity"
@@ -287,18 +327,32 @@ spec:
               }
           }
 
-          items = [
-            _oidc_provider,
-            s3_bucket,
-            s3_discovery,
-            s3_keys,
-            bucket_policy,
-            cloudfront_oai,
-            acm_certificate,
-            validation_record,
-            _cf_dist,
-            irsa_record,
-          ]
+          # Always include core IAM/S3 resources. Append CloudFront stack only for non-China regions.
+          _resources = []
+
+          if not is_china_region:
+            _resources = [
+              cloudfront_oai,
+              acm_certificate,
+              validation_record,
+              _cf_dist,
+              irsa_record,            
+              _oidc_provider,
+              s3_bucket,
+              s3_discovery,
+              s3_keys,
+              bucket_policy,
+            ]
+          else:
+            _resources = [
+              _oidc_provider,
+              s3_bucket,
+              s3_bucket_public_access_block,
+              s3_bucket_ownership,
+              s3_discovery,
+              s3_keys,
+            ]
+          items = _resources
 
   - step: automatically-detect-ready-composed-resources
     functionRef:

@@ -1,12 +1,12 @@
 apiVersion: crossplane.giantswarm.io/v1
 kind: IRSAClaim
 metadata:
-  name: pau51
+  name: pau53
   namespace: org-giantswarm
 spec:
   compositionRef:
     name: irsa-composition
-  name: pau51
-  bucketName: 306934455918-g8s-pau51-oidc-pod-identity-v3
-  providerConfigRef: pau51
+  name: pau53
+  bucketName: 306934455918-g8s-pau53-oidc-pod-identity-v3
+  providerConfigRef: pau53
   region: cn-north-1

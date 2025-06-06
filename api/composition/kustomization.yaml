@@ -2,3 +2,4 @@ resources:
   - composite_definition.yaml
   - runtime_config.yaml
   - function.yaml
+  - composition.yaml
