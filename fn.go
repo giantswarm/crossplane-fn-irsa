@@ -69,9 +69,9 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	}
 	f.log.Debug("ProviderConfig", "providerConfig", providerConfig)
 
-	if input.Spec.DomainRef != "" {
+	if !strings.HasPrefix(region, "cn-") {
 		if domain, err = f.getStringFromPaved(oxr.Resource, input.Spec.DomainRef); err != nil {
-			response.Fatal(rsp, errors.Wrapf(err, "cannot get region from %q", input.Spec.RegionRef))
+			response.Fatal(rsp, errors.Wrapf(err, "cannot get domain from %q", input.Spec.DomainRef))
 			return rsp, nil
 		}
 		f.log.Debug("Domain", "domain", domain)
