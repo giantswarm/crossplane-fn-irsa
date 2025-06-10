@@ -102,7 +102,7 @@ spec:
           s3_bucket = {
               apiVersion = "s3.aws.upbound.io/v1beta1"
               kind       = "Bucket"
-              metadata.name = "${composition_name}-bucket"
+              metadata.name = bucket_name
               spec = {
                   providerConfigRef.name = provider_cfg
                   forProvider.region     = region
