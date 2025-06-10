@@ -183,6 +183,8 @@ spec:
               spec = {
                 providerConfigRef.name = provider_cfg
                 forProvider = {
+                  bucketRef.name = bucket_name
+                  region = region
                   blockPublicAcls: False
                   blockPublicPolicy: False
                   ignorePublicAcls: False
@@ -198,6 +200,8 @@ spec:
               spec = {
                 providerConfigRef.name = provider_cfg
                 forProvider = {
+                  bucketRef.name = bucket_name
+                  region = region
                   rule = {
                     objectOwnership = "ObjectWriter"
                   }
