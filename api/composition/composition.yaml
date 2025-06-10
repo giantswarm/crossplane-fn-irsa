@@ -73,11 +73,11 @@ spec:
           # OpenID Connect Provider
           _oidc_client_id_list = ["sts.amazonaws.com"]
           _oidc_thumbprint_list = ["06b25927c42a721631c1efd9431e648fa62e1e39"]
-          _oidc_url = "https://irsa.${domain}"
+          _oidc_url = "irsa.${domain}"
           if is_china_region:
             _oidc_client_id_list = ["sts.amazonaws.com.cn"]
             _oidc_thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
-            _oidc_url = "https://s3.${region}.amazonaws.com.cn/${bucket_name}"
+            _oidc_url = "s3.${region}.amazonaws.com.cn/${bucket_name}"
 
           _oidc_provider = {
               apiVersion = "iam.aws.upbound.io/v1beta1"
@@ -87,7 +87,7 @@ spec:
               spec = {
                   providerConfigRef.name = provider_cfg
                   forProvider = {
-                      url            = _oidc_url
+                      url            = "https://${_oidc_url}"
                       clientIdList   = _oidc_client_id_list
                       thumbprintList = _oidc_thumbprint_list
                   }
