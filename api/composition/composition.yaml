@@ -202,9 +202,11 @@ spec:
                 forProvider = {
                   bucketRef.name = bucket_name
                   region = region
-                  rule = {
-                    objectOwnership = "ObjectWriter"
-                  }
+                  rule = [
+                    {
+                      objectOwnership = "ObjectWriter"
+                    }
+                  ]
                 }
               }
             }
