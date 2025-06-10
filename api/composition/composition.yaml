@@ -82,7 +82,7 @@ spec:
           _oidc_provider = {
               apiVersion = "iam.aws.upbound.io/v1beta1"
               kind       = "OpenIDConnectProvider"
-              metadata.name = domain
+              metadata.name = _oidc_url
               metadata.annotations = {}
               spec = {
                   providerConfigRef.name = provider_cfg
