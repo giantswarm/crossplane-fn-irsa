@@ -142,11 +142,11 @@ spec:
                   }
               }
           }
-
+          
+          bucket_arn  = option("params")?.ocds?[bucket_name]?.Resource?.status?.atProvider?.arn or ""
           if not is_china_region:
             # S3 Bucket Policy (depends on OAI and bucket status)
             oai_arn     = option("params")?.ocds?[oai_name]?.Resource?.status?.atProvider?.iamArn or ""
-            bucket_arn  = option("params")?.ocds?[bucket_name]?.Resource?.status?.atProvider?.arn or ""
             _policy_json = ""
             if oai_arn != "" and bucket_arn != "":
                 _policy_json = """{
