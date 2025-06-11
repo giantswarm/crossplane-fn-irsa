@@ -161,21 +161,35 @@ spec:
                         }
                     ]
                 }"""
-
-            bucket_policy = {
-                apiVersion = "s3.aws.upbound.io/v1beta1"
-                kind       = "BucketPolicy"
-                metadata.name = "${composition_name}-policy"
-                spec = {
-                    providerConfigRef.name = provider_cfg
-                    forProvider = {
-                        bucketRef.name = bucket_name
-                        region         = region
-                        policy         = _policy_json
-                    }
-                }
-            }
           else:
+            # S3 Bucket Policy for China regions (no OAI, public access block)
+            _policy_json = """{
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": "*",
+                        "Action": ["s3:GetObject"],
+                        "Resource": "${bucket_arn}/*"
+                    }
+                ]
+            }"""
+          
+          s3_bucket_policy = {
+              apiVersion = "s3.aws.upbound.io/v1beta1"
+              kind       = "BucketPolicy"
+              metadata.name = "${composition_name}-policy"
+              spec = {
+                  providerConfigRef.name = provider_cfg
+                  forProvider = {
+                      bucketRef.name = bucket_name
+                      region         = region
+                      policy         = _policy_json
+                  }
+              }
+          }
+
+          if is_china_region:
             s3_bucket_public_access_block = {
               apiVersion = "s3.aws.upbound.io/v1beta1"
               kind       = "BucketPublicAccessBlock"
@@ -347,12 +361,13 @@ spec:
               s3_bucket,
               s3_discovery,
               s3_keys,
-              bucket_policy,
+              s3_bucket_policy,
             ]
           else:
             _resources = [
               _oidc_provider,
               s3_bucket,
+              s3_bucket_policy,
               s3_bucket_public_access_block,
               s3_bucket_ownership,
               s3_discovery,
