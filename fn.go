@@ -109,13 +109,12 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 
 	key, err := f.ServiceAccountSecret(oxr.Resource.GetLabels()["crossplane.io/claim-namespace"], oxr.Resource.GetLabels()["crossplane.io/claim-name"])
 	if err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot get service account secret"))
-		return rsp, nil
-	}
-
-	if err = f.GenerateKeysFile(key, input.Spec.S3KeysPatchToRef, composed); err != nil {
-		response.Fatal(rsp, errors.Wrapf(err, "cannot generate keys file for domain %q", domain))
-		return rsp, nil
+		f.log.Debug("cannot get service account secret", "error", err)
+	} else {
+		if err = f.GenerateKeysFile(key, input.Spec.S3KeysPatchToRef, composed); err != nil {
+			response.Fatal(rsp, errors.Wrapf(err, "cannot generate keys file for domain %q", domain))
+			return rsp, nil
+		}
 	}
 
 	if err = composed.ToResponse(rsp); err != nil {
