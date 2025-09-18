@@ -52,6 +52,8 @@ spec:
           # Common variables extracted from the XR                                                       
           # ---------------------------------------------------------------------------
           composition_name = oxr?.metadata?.name or ""
+          wc_name = oxr?.spec?.name or ""
+
           region        = oxr?.spec?.region or ""
           bucket_name   = oxr?.spec?.bucketName or ""
           domain        = oxr?.spec?.domain or ""
@@ -90,6 +92,9 @@ spec:
                       url            = _oidc_url
                       clientIdList   = _oidc_client_id_list
                       thumbprintList = _oidc_thumbprint_list
+                      tags = {
+                        "giantswarm.io/cluster" = wc_name
+                      }
                   }
               }
           }
