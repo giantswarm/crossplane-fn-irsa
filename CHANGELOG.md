@@ -12,5 +12,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Add giantswarm.io/cluster tag to OpenIDConnectProvider
+- Fetch all hosted zones in case of pagination
 
 [Unreleased]: https://github.com/giantswarm/REPOSITORY_NAME/tree/main
