@@ -189,7 +189,7 @@ func (f *Function) DiscoverHostedZone(domain string, region string, providerConf
 	f.log.Debug("Total hosted zones found", "count", len(allHostedZones))
 
 	var matchingHostedZones []route53types.HostedZone
-	for _, hz := range hostedZones.HostedZones {
+	for _, hz := range allHostedZones {
 		zoneName := strings.TrimSuffix(*hz.Name, ".")
 		if zoneName == domain {
 			matchingHostedZones = append(matchingHostedZones, hz)
