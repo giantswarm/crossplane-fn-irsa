@@ -160,8 +160,36 @@ func (f *Function) DiscoverHostedZone(domain string, region string, providerConf
 		return err
 	}
 
+	// Fetch all hosted zones by paginating through results
+	var allHostedZones []route53types.HostedZone
+	allHostedZones = append(allHostedZones, hostedZones.HostedZones...)
+
+	// Continue fetching if there are more hosted zones
+	for hostedZones.IsTruncated {
+		var nextMarker *string
+		if hostedZones.NextMarker != nil {
+			nextMarker = hostedZones.NextMarker
+		} else if len(hostedZones.HostedZones) > 0 {
+			// If NextMarker is not provided, use the ID of the last hosted zone
+			nextMarker = hostedZones.HostedZones[len(hostedZones.HostedZones)-1].Id
+		}
+
+		hostedZones, err = GetHostedZones(context.Background(), client, &route53.ListHostedZonesInput{
+			Marker:   nextMarker,
+			MaxItems: aws.Int32(100),
+		})
+		if err != nil {
+			f.log.Info("Error listing additional hosted zones", "error", err)
+			return err
+		}
+
+		allHostedZones = append(allHostedZones, hostedZones.HostedZones...)
+	}
+
+	f.log.Debug("Total hosted zones found", "count", len(allHostedZones))
+
 	var matchingHostedZones []route53types.HostedZone
-	for _, hz := range hostedZones.HostedZones {
+	for _, hz := range allHostedZones {
 		zoneName := strings.TrimSuffix(*hz.Name, ".")
 		if zoneName == domain {
 			matchingHostedZones = append(matchingHostedZones, hz)
