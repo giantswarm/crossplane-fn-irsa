@@ -35,6 +35,8 @@ spec:
       spec:
         target: Resources
         source: |
+          import crypto
+          
           # IRSA composition rendered via KCL for Crossplane
           # This script is designed to be used by the crossplane-contrib/function-kcl
           # function. It reads the incoming IRSA composite resource (XR) and produces
@@ -115,6 +117,7 @@ spec:
           }
 
           # Bucket object: OIDC discovery doc
+          s3_discovery_content = oxr?.status?.s3Discovery or ""
           s3_discovery = {
               apiVersion = "s3.aws.upbound.io/v1beta1"
               kind       = "BucketObject"
@@ -126,11 +129,13 @@ spec:
                       key            = ".well-known/openid-configuration"
                       contentType    = "application/json"
                       region         = region
-                      contentBase64  = oxr?.status?.s3Discovery or ""
+                      contentBase64  = s3_discovery_content
+                      sourceHash     = crypto.md5(s3_discovery_content)
                   }
               }
           }
 
+          s3_key_content = oxr?.status?.s3Keys or ""
           # Bucket object: JWKS keys
           s3_keys = {
               apiVersion = "s3.aws.upbound.io/v1beta1"
@@ -143,7 +148,8 @@ spec:
                       key            = "keys.json"
                       contentType    = "application/json"
                       region         = region
-                      contentBase64  = oxr?.status?.s3Keys or ""
+                      contentBase64  = s3_key_content
+                      sourceHash     = crypto.md5(s3_key_content)
                   }
               }
           }
