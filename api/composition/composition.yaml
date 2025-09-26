@@ -198,7 +198,6 @@ spec:
                       bucketRef.name = bucket_name
                       region         = region
                       policy         = _policy_json
-                      tags           = tags
                   }
               }
           }
@@ -236,7 +235,7 @@ spec:
                       objectOwnership = "ObjectWriter"
                     }
                   ]
-                  tags           = tags
+                  tags = tags
                 }
               }
             }
@@ -252,7 +251,6 @@ spec:
                   forProvider = {
                       comment = "${composition_name} OAI for IRSA S3 bucket"
                       region  = region
-                      tags    = tags
                   }
               }
           } 
@@ -293,7 +291,6 @@ spec:
                       type           = cert_val.recordType
                       zoneId         = existing_route53_id
                       region         = region
-                      tags           = tags
                   }
               }
           }  
@@ -362,7 +359,6 @@ spec:
                       records        = [cloudfront_domain]
                       zoneId         = existing_route53_id
                       region         = region
-                      tags           = tags
                   }
               }
           }

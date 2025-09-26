@@ -40,6 +40,8 @@ spec:
                 tags:
                   type: object
                   description: "Tags to apply to the resources"
+                  additionalProperties:
+                    type: string
                   default: {}
               required:
                 - name
