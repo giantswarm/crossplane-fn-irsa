@@ -37,6 +37,10 @@ spec:
                   type: string
                   description: "AWS region where resources should be created"
                   default: "us-east-1"
+                tags:
+                  type: object
+                  description: "Tags to apply to the resources"
+                  default: {}
               required:
                 - name
                 - providerConfigRef
