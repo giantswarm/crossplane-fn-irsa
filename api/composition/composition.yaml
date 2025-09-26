@@ -36,7 +36,7 @@ spec:
         target: Resources
         source: |
           import crypto
-          
+
           # IRSA composition rendered via KCL for Crossplane
           # This script is designed to be used by the crossplane-contrib/function-kcl
           # function. It reads the incoming IRSA composite resource (XR) and produces
@@ -57,6 +57,7 @@ spec:
           wc_name = oxr?.spec?.name or ""
 
           region        = oxr?.spec?.region or ""
+          tags          = oxr?.spec?.tags or {}
           bucket_name   = oxr?.spec?.bucketName or ""
           domain        = oxr?.spec?.domain or ""
           provider_cfg  = oxr?.spec?.providerConfigRef or ""
@@ -94,9 +95,7 @@ spec:
                       url            = _oidc_url
                       clientIdList   = _oidc_client_id_list
                       thumbprintList = _oidc_thumbprint_list
-                      tags = {
-                        "giantswarm.io/cluster" = wc_name
-                      }
+                      tags = tags
                   }
               }
           }
@@ -113,6 +112,7 @@ spec:
               spec = {
                   providerConfigRef.name = provider_cfg
                   forProvider.region     = region
+                  forProvider.tags       = tags
               }
           }
 
@@ -131,6 +131,7 @@ spec:
                       region         = region
                       contentBase64  = s3_discovery_content
                       sourceHash     = crypto.md5(s3_discovery_content)
+                      tags           = tags
                   }
               }
           }
@@ -150,6 +151,7 @@ spec:
                       region         = region
                       contentBase64  = s3_key_content
                       sourceHash     = crypto.md5(s3_key_content)
+                      tags           = tags
                   }
               }
           }
@@ -214,6 +216,7 @@ spec:
                   blockPublicPolicy: False
                   ignorePublicAcls: False
                   restrictPublicBuckets: False
+                  tags           = tags
                 }
               }
             }
@@ -232,6 +235,7 @@ spec:
                       objectOwnership = "ObjectWriter"
                     }
                   ]
+                  tags = tags
                 }
               }
             }
@@ -262,6 +266,7 @@ spec:
                       validationMethod = "DNS"
                       region           = "us-east-1"
                       domainName       = "irsa.${domain}"
+                      tags             = tags
                   }
               }
           }  
