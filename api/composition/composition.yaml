@@ -64,6 +64,9 @@ spec:
           # Whether the deployment region is in mainland China (e.g. cn-north-1, cn-northwest-1)
           is_china_region = region.startswith("cn-")
 
+          if not tags.contains("giantswarm.io/cluster"):
+            tags["giantswarm.io/cluster"] = wc_name
+
           # ---------------------------------------------------------------------------
           # Existing resources status
           # ---------------------------------------------------------------------------
