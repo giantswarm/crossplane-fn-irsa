@@ -57,15 +57,24 @@ spec:
           wc_name = oxr?.spec?.name or ""
 
           region        = oxr?.spec?.region or ""
-          tags          = oxr?.spec?.tags or {}
+          _tags          = oxr?.spec?.tags or {}
           bucket_name   = oxr?.spec?.bucketName or ""
           domain        = oxr?.spec?.domain or ""
           provider_cfg  = oxr?.spec?.providerConfigRef or ""
           # Whether the deployment region is in mainland China (e.g. cn-north-1, cn-northwest-1)
           is_china_region = region.startswith("cn-")
 
-          if not tags.contains("giantswarm.io/cluster"):
-            tags["giantswarm.io/cluster"] = wc_name
+          # ---------------------------------------------------------------------------
+          # Hack only needed until all cluster are in v33, after that we can remove this 
+          # as the cluster-aws chart always sets the cluster tag, variables are immutable
+          # in this function so we need to set the tags here.
+          # ---------------------------------------------------------------------------
+          if _tags == {}:
+            tags = {
+              "giantswarm.io/cluster": wc_name
+            }
+          else:
+            tags = _tags
 
           # ---------------------------------------------------------------------------
           # Existing resources status
