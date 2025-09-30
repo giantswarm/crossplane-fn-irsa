@@ -11,7 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Add giantswarm.io/cluster tag to OpenIDConnectProvider
+- Add default tags to all resources
 - Fetch all hosted zones in case of pagination
 - Add sourceHash to detect drift serverside
 
