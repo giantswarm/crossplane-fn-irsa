@@ -70,11 +70,9 @@ spec:
           # in this function so we need to set the tags here.
           # ---------------------------------------------------------------------------
           if _tags == {}:
-            tags = {
+            _tags = {
               "giantswarm.io/cluster": wc_name
             }
-          else:
-            tags = _tags
 
           # ---------------------------------------------------------------------------
           # Existing resources status
@@ -107,7 +105,7 @@ spec:
                       url            = _oidc_url
                       clientIdList   = _oidc_client_id_list
                       thumbprintList = _oidc_thumbprint_list
-                      tags = tags
+                      tags = _tags
                   }
               }
           }
@@ -124,7 +122,7 @@ spec:
               spec = {
                   providerConfigRef.name = provider_cfg
                   forProvider.region     = region
-                  forProvider.tags       = tags
+                  forProvider.tags       = _tags
               }
           }
 
@@ -143,7 +141,7 @@ spec:
                       region         = region
                       contentBase64  = s3_discovery_content
                       sourceHash     = crypto.md5(s3_discovery_content)
-                      tags           = tags
+                      tags           = _tags
                   }
               }
           }
@@ -163,7 +161,7 @@ spec:
                       region         = region
                       contentBase64  = s3_key_content
                       sourceHash     = crypto.md5(s3_key_content)
-                      tags           = tags
+                      tags           = _tags
                   }
               }
           }
@@ -228,7 +226,7 @@ spec:
                   blockPublicPolicy: False
                   ignorePublicAcls: False
                   restrictPublicBuckets: False
-                  tags           = tags
+                  tags           = _tags
                 }
               }
             }
@@ -247,7 +245,7 @@ spec:
                       objectOwnership = "ObjectWriter"
                     }
                   ]
-                  tags = tags
+                  tags = _tags
                 }
               }
             }
@@ -278,7 +276,7 @@ spec:
                       validationMethod = "DNS"
                       region           = "us-east-1"
                       domainName       = "irsa.${domain}"
-                      tags             = tags
+                      tags             = _tags
                   }
               }
           }  
