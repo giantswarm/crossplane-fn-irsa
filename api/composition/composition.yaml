@@ -226,7 +226,6 @@ spec:
                   blockPublicPolicy: False
                   ignorePublicAcls: False
                   restrictPublicBuckets: False
-                  tags           = _tags
                 }
               }
             }
@@ -245,7 +244,6 @@ spec:
                       objectOwnership = "ObjectWriter"
                     }
                   ]
-                  tags = _tags
                 }
               }
             }
