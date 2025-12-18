@@ -6,6 +6,8 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/credentials/stscreds"
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront"
 	cloudfronttypes "github.com/aws/aws-sdk-go-v2/service/cloudfront/types"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -106,6 +108,28 @@ var (
 		if err != nil {
 			return aws.Config{}, nil, err
 		}
+
+		// I'll move this to xfnlib once it works
+		if len(pcfg.AssumeRoleChain) > 0 {
+			stsclient := sts.NewFromConfig(awsCfg)
+
+			assumeRoleArn := &pcfg.AssumeRoleChain[0].RoleARN
+
+			log.Info("Assuming role", "role", *assumeRoleArn, "credentialsSource", pcfg.Credentials.Source)
+			if awsCfg, err = config.LoadDefaultConfig(
+				context.TODO(), // ANDI ctx
+				config.WithRegion(*region),
+				config.WithCredentialsProvider(aws.NewCredentialsCache(
+					stscreds.NewAssumeRoleProvider( // ANDI stscredsv2
+						stsclient,
+						*assumeRoleArn,
+					)),
+				),
+			); err != nil {
+				return aws.Config{}, nil, errors.Wrapf(err, "failed to load aws config to assume role '%q'", *assumeRoleArn)
+			}
+		}
+
 		fmt.Printf("ANDI region=%q\n", awsCfg.Region)
 		awsCfg.AppID = "crossplane-fn-irsa"
 		if awsCfg.Credentials != nil {
