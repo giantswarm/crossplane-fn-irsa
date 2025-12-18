@@ -101,20 +101,20 @@ var (
 		if err != nil {
 			return aws.Config{}, nil, err
 		}
-		fmt.Printf("ANDI pcfg.AssumeRoleChain=%+v\n", pcfg.AssumeRoleChain)
+		fmt.Printf("ANDI pcfg.AssumeRoleChain=%+v pcfg.Credentials.Source=%q\n", pcfg.AssumeRoleChain, pcfg.Credentials.Source)
 		awsCfg, services, err := xfnaws.Config(region, providerCfgRef, log)
 		if err != nil {
 			return aws.Config{}, nil, err
 		}
 		fmt.Printf("ANDI region=%q\n", awsCfg.Region)
-		fmt.Printf("ANDI appid=%q\n", awsCfg.AppID)
+		awsCfg.AppID = "crossplane-fn-irsa"
 		if awsCfg.Credentials != nil {
 			cred, _ := awsCfg.Credentials.Retrieve(context.TODO())
-			fmt.Printf("ANDI cred AccessKeyID=%q AccountID=%q Source=%q err=%v\n", cred.AccessKeyID, cred.AccountID, cred.Source, err)
+			fmt.Printf("ANDI cred AccessKeyID=%q SecretAccessKey.len=%d AccountID=%q Source=%q err=%v\n", cred.AccessKeyID, len(cred.SecretAccessKey), cred.AccountID, cred.Source, err)
 		} else {
 			fmt.Printf("ANDI no cred\n")
 		}
-		return awsCfg, services, nil
+		return awsCfg, services, err
 	}
 )
 
