@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -94,8 +95,26 @@ var (
 		return sts.NewFromConfig(cfg)
 	}
 
-	awsConfig = func(region, providerCfg *string, log logging.Logger) (aws.Config, map[string]string, error) {
-		return xfnaws.Config(region, providerCfg, log)
+	awsConfig = func(region, providerCfgRef *string, log logging.Logger) (aws.Config, map[string]string, error) {
+		// TODO debugging, remove again
+		pcfg, err := xfnaws.GetProviderConfig(providerCfgRef)
+		if err != nil {
+			return aws.Config{}, nil, err
+		}
+		fmt.Printf("ANDI pcfg.AssumeRoleChain=%+v\n", pcfg.AssumeRoleChain)
+		awsCfg, services, err := xfnaws.Config(region, providerCfgRef, log)
+		if err != nil {
+			return aws.Config{}, nil, err
+		}
+		fmt.Printf("ANDI region=%q\n", awsCfg.Region)
+		fmt.Printf("ANDI appid=%q\n", awsCfg.AppID)
+		if awsCfg.Credentials != nil {
+			cred, _ := awsCfg.Credentials.Retrieve(context.TODO())
+			fmt.Printf("ANDI cred AccessKeyID=%q AccountID=%q Source=%q err=%v\n", cred.AccessKeyID, cred.AccountID, cred.Source, err)
+		} else {
+			fmt.Printf("ANDI no cred\n")
+		}
+		return awsCfg, services, nil
 	}
 )
 
