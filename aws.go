@@ -94,8 +94,14 @@ var (
 		return sts.NewFromConfig(cfg)
 	}
 
-	awsConfig = func(region, providerCfg *string, log logging.Logger) (aws.Config, map[string]string, error) {
-		return xfnaws.Config(region, providerCfg, log)
+	awsConfig = func(region, providerCfgRef *string, log logging.Logger) (aws.Config, map[string]string, error) {
+		awsCfg, services, err := xfnaws.Config(region, providerCfgRef, log)
+		if err != nil {
+			return aws.Config{}, nil, err
+		}
+
+		awsCfg.AppID = "crossplane-fn-irsa"
+		return awsCfg, services, err
 	}
 )
 
