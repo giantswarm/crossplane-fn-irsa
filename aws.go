@@ -311,7 +311,7 @@ func (f *Function) DiscoverEKSOpenIdProvider(controlPlaneRef string, namespace s
 	})
 
 	f.log.Debug("Fetching AWSManagedControlPlane resource", "name", controlPlaneRef, "namespace", namespace)
-	
+
 	err = client.Get(context.Background(), types.NamespacedName{
 		Namespace: namespace,
 		Name:      controlPlaneRef,

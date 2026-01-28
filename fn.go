@@ -66,7 +66,7 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	// Check if this is an EKS-specific flow (has awsManagedControlPlaneRef)
 	if input.Spec.AwsManagedControlPlaneRef != "" {
 		f.log.Debug("Processing EKS IRSA discovery")
-		
+
 		var awsManagedControlPlaneRef string
 		if awsManagedControlPlaneRef, err = f.getStringFromPaved(oxr.Resource, input.Spec.AwsManagedControlPlaneRef); err != nil {
 			response.Fatal(rsp, errors.Wrapf(err, "cannot get AWSManagedControlPlane reference from %q", input.Spec.AwsManagedControlPlaneRef))
