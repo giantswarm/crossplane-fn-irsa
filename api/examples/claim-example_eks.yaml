@@ -1,0 +1,13 @@
+apiVersion: crossplane.giantswarm.io/v1
+kind: IRSAEKSClaim
+metadata:
+  name: my-eks-cluster-irsa
+  namespace: default
+spec:
+  name: my-eks-cluster
+  awsManagedControlPlaneRef: my-eks-cluster-control-plane
+  providerConfigRef: default
+  region: us-east-1
+  tags:
+    environment: production
+    cluster: my-eks-cluster

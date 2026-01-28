@@ -1,0 +1,53 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: irsaeks.crossplane.giantswarm.io
+spec:
+  group: crossplane.giantswarm.io
+  names:
+    kind: IRSAEKS
+    plural: irsaeks
+  claimNames:
+    kind: IRSAEKSClaim
+    plural: irsaeksclaims
+  versions:
+    - name: v1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: "Base name used for resources"
+                awsManagedControlPlaneRef:
+                  type: string
+                  description: "Reference to the AWSManagedControlPlane resource name"
+                providerConfigRef:
+                  type: string
+                  description: "Name of the AWS provider configuration"
+                region:
+                  type: string
+                  description: "AWS region where resources should be created"
+                  default: "us-east-1"
+                tags:
+                  type: object
+                  description: "Tags to apply to the resources"
+                  additionalProperties:
+                    type: string
+                  default: {}
+              required:
+                - name
+                - providerConfigRef
+                - awsManagedControlPlaneRef
+                - region
+            status:
+              type: object
+              properties:
+                oidcProviderUrl:
+                  type: string
+                  description: "URL of the OpenID Connect Provider"

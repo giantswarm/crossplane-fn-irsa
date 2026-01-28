@@ -31,13 +31,13 @@ type Spec struct {
 	// +optional
 	Route53HostedZonePatchToRef string `json:"route53HostedZonePatchToRef"`
 
-	// +required
+	// +optional
 	S3KeysPatchToRef string `json:"s3KeysPatchToRef"`
 
-	// +required
+	// +optional
 	S3BucketNameRef string `json:"s3BucketNameRef"`
 
-	// +required
+	// +optional
 	S3DiscoveryPatchToRef string `json:"s3DiscoveryPatchToRef"`
 
 	// +required
@@ -45,4 +45,11 @@ type Spec struct {
 
 	// +required
 	ProviderConfigRef string `json:"providerConfigRef"`
+
+	// EKS-specific fields
+	// +optional
+	AwsManagedControlPlaneRef string `json:"awsManagedControlPlaneRef"`
+
+	// +optional
+	OidcProviderUrlPatchToRef string `json:"oidcProviderUrlPatchToRef"`
 }
