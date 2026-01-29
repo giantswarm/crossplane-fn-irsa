@@ -56,7 +56,6 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	}
 	f.log.Debug("Region", "region", region)
 
-	// Original IRSA flow (non-EKS)
 	if S3BucketName, err = f.getStringFromPaved(oxr.Resource, input.Spec.S3BucketNameRef); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot get S3 bucket name from %q", input.Spec.S3BucketNameRef))
 		return rsp, nil
