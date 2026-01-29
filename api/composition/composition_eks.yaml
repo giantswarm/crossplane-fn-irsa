@@ -8,19 +8,6 @@ spec:
     kind: IRSAEKS
   mode: Pipeline
   pipeline:
-    - step: irsa-eks-discovery
-      functionRef:
-        name: function-irsa
-      input:
-        apiVersion: irsa.fn.giantswarm.io
-        kind: Input
-        metadata:
-          namespace: crossplane
-        spec:
-          regionRef: spec.region
-          providerConfigRef: spec.providerConfigRef
-          awsManagedControlPlaneRef: spec.awsManagedControlPlaneRef
-          oidcProviderUrlPatchToRef: status.oidcProviderUrl
     - step: render-resources
       functionRef:
         name: function-kcl
@@ -38,56 +25,90 @@ spec:
             # ---------------------------------------------------------------------------
             # Input shorthands
             # ---------------------------------------------------------------------------
-            oxr  = option("params")?.oxr          # Observed  Composite Resource (XR)
-            dxr  = option("params")?.dxr          # Desired   Composite Resource (XR)
-            ocds = option("params")?.ocds or {}   # Observed  Composed Resources map
+            oxr  = option("params")?.oxr                   # Observed  Composite Resource (XR)
+            dxr  = option("params")?.dxr                   # Desired   Composite Resource (XR)
+            ocds = option("params")?.ocds or {}            # Observed  Composed Resources map
+            er   = option("params")?.extraResources or {}  # Extra Resources
 
             # ---------------------------------------------------------------------------
             # Common variables extracted from the XR                                                       
             # ---------------------------------------------------------------------------
             composition_name = oxr?.metadata?.name or ""
-            wc_name = oxr?.spec?.name or ""
+            wc_name          = oxr?.spec?.name or ""
+            namespace        = oxr?.spec?.claimRef?.namespace or ""
 
-            region        = oxr?.spec?.region or ""
-            _tags         = oxr?.spec?.tags or {}
-            provider_cfg  = oxr?.spec?.providerConfigRef or ""
-            oidc_issuer_url = oxr?.status?.oidcProviderUrl or ""
+            region                        = oxr?.spec?.region or ""
+            _tags                         = oxr?.spec?.tags or {}
+            provider_cfg                  = oxr?.spec?.providerConfigRef or ""
+            aws_managed_control_plane_ref = oxr?.spec?.awsManagedControlPlaneRef or ""
 
             # Whether the deployment region is in mainland China (e.g. cn-north-1, cn-northwest-1)
             is_china_region = region.startswith("cn-")
+
+            # OpenID Connect Provider for EKS
+            _oidc_client_id_list  = ["sts.amazonaws.com"]
+            _oidc_thumbprint_list = ["06b25927c42a721631c1efd9431e648fa62e1e39"]
+            if is_china_region:
+                _oidc_client_id_list = ["sts.amazonaws.com.cn"]
+                _oidc_thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
+
+            # ---------------------------------------------------------------------------
+            # Request extra resources: AWSManagedControlPlane
+            # ---------------------------------------------------------------------------
+            _extra_resources = {
+                apiVersion = "meta.krm.kcl.dev/v1alpha1"
+                kind = "ExtraResources"
+                requirements = {
+                    awsManagedControlPlane = {
+                        apiVersion = "controlplane.cluster.x-k8s.io/v1beta2"
+                        kind = "AWSManagedControlPlane"
+                        matchName = aws_managed_control_plane_ref
+                        matchNamespace = namespace
+                    }
+                }
+            }
+
+            # Extract existing OIDC provider ARN from AWSManagedControlPlane if available
+            oidc_arn        = ""
+            oidc_issuer_url = ""
+
+            if er?.awsManagedControlPlane:
+                control_plane = er.awsManagedControlPlane[0]?.Resource
+                if control_plane?.status?.oidcProvider?.arn:
+                    oidc_arn = control_plane.status.oidcProvider.arn
+                    # Infer OIDC provider URL from ARN
+                    # ARN format: arn:aws:iam::{account-id}:oidc-provider/{url}
+                    # Extract the URL part after "oidc-provider/" and prepend "https://"
+                    if "oidc-provider/" in oidc_arn:
+                        url_part = oidc_arn.split("oidc-provider/")[1]
+                        oidc_issuer_url = "https://${url_part}"
 
             # ---------------------------------------------------------------------------
             # Managed resources
             # ---------------------------------------------------------------------------
 
-            # OpenID Connect Provider for EKS
-            _oidc_client_id_list = ["sts.amazonaws.com"]
-            _oidc_thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da2b0ab7280"]
-            if is_china_region:
-              _oidc_client_id_list = ["sts.amazonaws.com.cn"]
-
-            _oidc_provider = {
-                apiVersion = "iam.aws.upbound.io/v1beta1"
-                kind       = "OpenIDConnectProvider"
-                metadata.name = "${composition_name}-oidc"
-                metadata.annotations = {}
-                spec = {
-                    providerConfigRef.name = provider_cfg
-                    forProvider = {
-                        url            = oidc_issuer_url
-                        clientIdList   = _oidc_client_id_list
-                        thumbprintList = _oidc_thumbprint_list
-                        tags = _tags
+            _oidc_provider = []
+            if oidc_issuer_url:
+                _oidc_provider = [{
+                    apiVersion    = "iam.aws.upbound.io/v1beta1"
+                    kind          = "OpenIDConnectProvider"
+                    metadata.name = "${composition_name}-oidc"
+                    metadata.annotations = {
+                        "crossplane.io/external-name" = oidc_arn
                     }
-                }
-            }
-            if existing_oidc_arn != "":
-              _oidc_provider.metadata.annotations = {
-                  "crossplane.io/external-name" = existing_oidc_arn
-              }
+                    spec = {
+                        providerConfigRef.name = provider_cfg
+                        forProvider = {
+                            url            = oidc_issuer_url
+                            clientIdList   = _oidc_client_id_list
+                            thumbprintList = _oidc_thumbprint_list
+                            tags           = _tags
+                        }
+                    }
+                }]
 
-            # Return only the OIDC provider resource
-            items = [_oidc_provider]
+            # Return the extra resources request and the OIDC provider resource
+            items = [dxr, _extra_resources] + _oidc_provider
 
     - step: automatically-detect-ready-composed-resources
       functionRef:
