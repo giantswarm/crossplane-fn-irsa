@@ -56,48 +56,19 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	}
 	f.log.Debug("Region", "region", region)
 
-	if providerConfig, err = f.getStringFromPaved(oxr.Resource, input.Spec.ProviderConfigRef); err != nil {
-		f.log.Info("cannot get provider config reference from input", "error", err)
-		response.Fatal(rsp, errors.Wrap(err, "cannot get provider config reference from input"))
-		return rsp, nil
-	}
-	f.log.Debug("ProviderConfig", "providerConfig", providerConfig)
-
-	// Check if this is an EKS-specific flow (has awsManagedControlPlaneRef)
-	if input.Spec.AwsManagedControlPlaneRef != "" {
-		f.log.Debug("Processing EKS IRSA discovery")
-
-		var awsManagedControlPlaneRef string
-		if awsManagedControlPlaneRef, err = f.getStringFromPaved(oxr.Resource, input.Spec.AwsManagedControlPlaneRef); err != nil {
-			response.Fatal(rsp, errors.Wrapf(err, "cannot get AWSManagedControlPlane reference from %q", input.Spec.AwsManagedControlPlaneRef))
-			return rsp, nil
-		}
-		f.log.Debug("AWSManagedControlPlaneRef", "ref", awsManagedControlPlaneRef)
-
-		namespace := oxr.Resource.GetLabels()["crossplane.io/claim-namespace"]
-		if namespace == "" {
-			namespace = "default"
-		}
-
-		if err = f.DiscoverEKSOpenIdProvider(awsManagedControlPlaneRef, namespace, region, providerConfig, input.Spec.OidcProviderUrlPatchToRef, composed); err != nil {
-			response.Fatal(rsp, errors.Wrapf(err, "cannot discover EKS OIDC provider for control plane %q", awsManagedControlPlaneRef))
-			return rsp, nil
-		}
-
-		if err = composed.ToResponse(rsp); err != nil {
-			response.Fatal(rsp, errors.Wrapf(err, "cannot convert composition to response %T", rsp))
-			return
-		}
-
-		return rsp, nil
-	}
-
 	// Original IRSA flow (non-EKS)
 	if S3BucketName, err = f.getStringFromPaved(oxr.Resource, input.Spec.S3BucketNameRef); err != nil {
 		response.Fatal(rsp, errors.Wrapf(err, "cannot get S3 bucket name from %q", input.Spec.S3BucketNameRef))
 		return rsp, nil
 	}
 	f.log.Debug("S3BucketName", "S3BucketName", S3BucketName)
+
+	if providerConfig, err = f.getStringFromPaved(oxr.Resource, input.Spec.ProviderConfigRef); err != nil {
+		f.log.Info("cannot get provider config reference from input", "error", err)
+		response.Fatal(rsp, errors.Wrap(err, "cannot get provider config reference from input"))
+		return rsp, nil
+	}
+	f.log.Debug("ProviderConfig", "providerConfig", providerConfig)
 
 	if !strings.HasPrefix(region, "cn-") {
 		if domain, err = f.getStringFromPaved(oxr.Resource, input.Spec.DomainRef); err != nil {

@@ -14,11 +14,7 @@ import (
 	"github.com/crossplane/crossplane-runtime/pkg/errors"
 	"github.com/crossplane/crossplane-runtime/pkg/logging"
 	xfnaws "github.com/giantswarm/xfnlib/pkg/auth/aws"
-	kclient "github.com/giantswarm/xfnlib/pkg/auth/kubernetes"
 	"github.com/giantswarm/xfnlib/pkg/composite"
-	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 type Route53Api interface {
@@ -291,74 +287,6 @@ func (f *Function) DiscoverDistribution(domain string, region string, providerCo
 	return nil
 }
 
-func (f *Function) DiscoverEKSOpenIdProvider(controlPlaneRef string, namespace string, region string, providerConfigRef string, urlPatchTo string, composed *composite.Composition) (err error) {
-	f.log.Debug("Discovering EKS OpenID Connect provider from AWSManagedControlPlane", "controlPlaneRef", controlPlaneRef, "namespace", namespace, "region", region)
-
-	// Get the Kubernetes client
-	client, err := kclient.Client()
-	if err != nil {
-		f.log.Info("Failed to create Kubernetes client", "error", err)
-		return errors.Wrap(err, "failed to create kubernetes client")
-	}
-
-	// Fetch the AWSManagedControlPlane resource
-	// We need to create an unstructured object since we don't have the typed client for CAPA
-	awsManagedControlPlane := &unstructured.Unstructured{}
-	awsManagedControlPlane.SetGroupVersionKind(schema.GroupVersionKind{
-		Group:   "controlplane.cluster.x-k8s.io",
-		Version: "v1beta2",
-		Kind:    "AWSManagedControlPlane",
-	})
-
-	f.log.Debug("Fetching AWSManagedControlPlane resource", "name", controlPlaneRef, "namespace", namespace)
-
-	err = client.Get(context.Background(), types.NamespacedName{
-		Namespace: namespace,
-		Name:      controlPlaneRef,
-	}, awsManagedControlPlane)
-	if err != nil {
-		f.log.Info("Failed to get AWSManagedControlPlane resource", "error", err, "name", controlPlaneRef, "namespace", namespace)
-		return errors.Wrapf(err, "failed to get AWSManagedControlPlane resource %s/%s", namespace, controlPlaneRef)
-	}
-
-	// Extract the OIDC provider ARN from status.oidcProvider.arn
-	oidcProviderArn, found, err := unstructured.NestedString(awsManagedControlPlane.Object, "status", "oidcProvider", "arn")
-	if err != nil {
-		f.log.Info("Failed to extract OIDC provider ARN from AWSManagedControlPlane status", "error", err)
-		return errors.Wrap(err, "failed to extract oidcProvider.arn from status")
-	}
-	if !found || oidcProviderArn == "" {
-		f.log.Debug("OIDC provider ARN not found in AWSManagedControlPlane status", "controlPlaneRef", controlPlaneRef)
-		return nil
-	}
-
-	f.log.Info("Found OIDC provider ARN in AWSManagedControlPlane", "arn", oidcProviderArn)
-
-	// Parse the URL from the ARN
-	// ARN format: arn:aws:iam::ACCOUNT_ID:oidc-provider/oidc.eks.REGION.amazonaws.com/id/CLUSTER_ID
-	// or for China: arn:aws-cn:iam::ACCOUNT_ID:oidc-provider/oidc.eks.REGION.amazonaws.com.cn/id/CLUSTER_ID
-	oidcProviderUrl := ""
-	parts := strings.Split(oidcProviderArn, ":oidc-provider/")
-	if len(parts) == 2 {
-		oidcProviderUrl = "https://" + parts[1]
-	} else {
-		f.log.Info("Unexpected OIDC provider ARN format", "arn", oidcProviderArn)
-		return errors.Errorf("unexpected OIDC provider ARN format: %s", oidcProviderArn)
-	}
-
-	f.log.Info("Parsed OIDC provider URL from ARN", "url", oidcProviderUrl)
-
-	// Patch the URL to the composite resource
-	if urlPatchTo != "" {
-		err = f.patchFieldValueToObject(urlPatchTo, oidcProviderUrl, composed.DesiredComposite.Resource)
-		if err != nil {
-			f.log.Info("Failed to patch provider URL", "error", err, "url", oidcProviderUrl)
-			return err
-		}
-	}
-
-	return nil
-}
 func (f *Function) DiscoverOpenIdProvider(domain string, region string, providerConfigRef string, composed *composite.Composition) (err error) {
 	var (
 		cfg      aws.Config
