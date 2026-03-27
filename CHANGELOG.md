@@ -15,4 +15,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fetch all hosted zones in case of pagination
 - Add sourceHash to detect drift serverside
 
-[Unreleased]: https://github.com/giantswarm/REPOSITORY_NAME/tree/main
+[Unreleased]: https://github.com/giantswarm/crossplane-fn-irsa/tree/main
