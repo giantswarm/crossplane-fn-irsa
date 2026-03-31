@@ -1,6 +1,8 @@
 # DO NOT EDIT. Generated with:
 #
-#    devctl@6.14.0
+#    devctl
+#
+#    https://github.com/giantswarm/devctl/blob/d0c8f03c86ad4cfaef54d2315dc6f6d402be716d/pkg/gen/input/makefile/internal/file/Makefile.template
 #
 
 include Makefile.*.mk
