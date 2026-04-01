@@ -12,37 +12,57 @@ workflows:
             # Trigger job also on git tag.
             tags:
               only: /^v.*/
-      - builddocker:
+      - prepare-tag:
           context:
             - architect
           filters:
             tags:
               only: /^v.*/
+      - build-and-push:
+          context:
+            - architect
+          requires:
+            - prepare-tag
+          filters:
+            tags:
+              only: /^v.*/
 
 jobs:
-  builddocker:
+  prepare-tag:
+    executor: architect/architect
+    steps:
+      - checkout
+      - architect/image-prepare-tag
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .docker_image_tag
+
+  build-and-push:
     machine:
       image: ubuntu-2204:edge
     steps:
       - checkout
+      - attach_workspace:
+          at: .
       - run:
           name: "Push to gsoci"
           command: |
             REGISTRY_SERVER=gsoci.azurecr.io
             REGISTRY=${REGISTRY_SERVER}/giantswarm
             echo "$ACR_GSOCI_PASSWORD" | docker login --username $ACR_GSOCI_USERNAME --password-stdin ${REGISTRY_SERVER}
-            [ -z "${CIRCLE_TAG}" ] && CIRCLE_TAG=v0.0.33-dev
+            TAG=$(cat .docker_image_tag)
 
             curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | sh
 
-            docker buildx build . -t ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
+            docker buildx build . -t ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${TAG}
 
-            echo "triggering : ./crossplane xpkg build -f pkg/package/ --embed-runtime-image=${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}"
-            ./crossplane xpkg build -f pkg/package/ --embed-runtime-image=${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
+            echo "triggering : ./crossplane xpkg build -f pkg/package/ --embed-runtime-image=${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${TAG}"
+            ./crossplane xpkg build -f pkg/package/ --embed-runtime-image=${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${TAG}
 
             cd pkg/package/
             ls
-            echo "triggering : ./crossplane xpkg push ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}"
-            ../../crossplane xpkg push ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}
+            echo "triggering : ./crossplane xpkg push ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${TAG}"
+            ../../crossplane xpkg push ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${TAG}
 
-            echo "Pushed to ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${CIRCLE_TAG}"
+            echo "Pushed to ${REGISTRY}/${CIRCLE_PROJECT_REPONAME}:${TAG}"
