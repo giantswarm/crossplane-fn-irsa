@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add GitHub Actions workflow to bump `api/composition/function.yaml` package version on release PRs.
+- Move Crossplane manifests (Function, XRD, Composition, RuntimeConfig) into Helm chart with configurable values.
 
 ### Changed
 
