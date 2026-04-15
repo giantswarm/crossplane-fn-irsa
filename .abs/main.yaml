@@ -3,4 +3,3 @@ replace-chart-version-with-git: true
 generate-metadata: true
 chart-dir: ./helm/crossplane-fn-irsa
 catalog-base-url: https://giantswarm.github.io/giantswarm-catalog/
-ct-config: ./.circleci/ct-config.yaml
