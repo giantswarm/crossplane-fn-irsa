@@ -51,7 +51,7 @@ spec:
           ocds = option("params")?.ocds or {}   # Observed  Composed Resources map
 
           # ---------------------------------------------------------------------------
-          # Common variables extracted from the XR                                                       
+          # Common variables extracted from the XR
           # ---------------------------------------------------------------------------
           composition_name = oxr?.metadata?.name or ""
           wc_name = oxr?.spec?.name or ""
@@ -65,7 +65,7 @@ spec:
           is_china_region = region.startswith("cn-")
 
           # ---------------------------------------------------------------------------
-          # Hack only needed until all cluster are in v33, after that we can remove this 
+          # Hack only needed until all cluster are in v33, after that we can remove this
           # as the cluster-aws chart always sets the cluster tag, variables are immutable
           # in this function so we need to set the tags here.
           # ---------------------------------------------------------------------------
@@ -84,7 +84,7 @@ spec:
           # ---------------------------------------------------------------------------
           # Managed resources
           # ---------------------------------------------------------------------------
-          
+
           # OpenID Connect Provider
           _oidc_client_id_list = ["sts.amazonaws.com"]
           _oidc_thumbprint_list = ["06b25927c42a721631c1efd9431e648fa62e1e39"]
@@ -141,7 +141,7 @@ spec:
                       region         = region
                       contentBase64  = s3_discovery_content
                       sourceHash     = crypto.md5(s3_discovery_content)
-                      tags           = _tags
+                      tags           = {}
                   }
               }
           }
@@ -161,11 +161,11 @@ spec:
                       region         = region
                       contentBase64  = s3_key_content
                       sourceHash     = crypto.md5(s3_key_content)
-                      tags           = _tags
+                      tags           = {}
                   }
               }
           }
-          
+
           bucket_arn  = option("params")?.ocds?[bucket_name]?.Resource?.status?.atProvider?.arn or ""
           if not is_china_region:
             # S3 Bucket Policy (depends on OAI and bucket status)
@@ -197,7 +197,7 @@ spec:
                     }
                 ]
             }"""
-          
+
           s3_bucket_policy = {
               apiVersion = "s3.aws.upbound.io/v1beta1"
               kind       = "BucketPolicy"
@@ -261,7 +261,7 @@ spec:
                       region  = region
                   }
               }
-          } 
+          }
 
           # ACM Certificate (us-east-1 for CloudFront)
           acm_certificate = {
@@ -277,14 +277,14 @@ spec:
                       tags             = _tags
                   }
               }
-          }  
+          }
           # Validation Route53 record for the ACM certificate
           cert_status = option("params")?.ocds?["${composition_name}-irsa-cloudfront-certificate"]?.Resource?.status or {}
           cert_val = {
               recordName  = cert_status?.atProvider?.domainValidationOptions?[0]?.resourceRecordName
               recordValue = cert_status?.atProvider?.domainValidationOptions?[0]?.resourceRecordValue
               recordType  = cert_status?.atProvider?.domainValidationOptions?[0]?.resourceRecordType
-          }  
+          }
           validation_record = {
               apiVersion = "route53.aws.upbound.io/v1beta1"
               kind       = "Record"
@@ -301,7 +301,7 @@ spec:
                       region         = region
                   }
               }
-          }  
+          }
           # CloudFront Distribution
           cf_name   = "${composition_name}-irsa-cloudfront-distribution"
           oai_path     = option("params")?.ocds?[oai_name]?.Resource?.status?.atProvider?.cloudfrontAccessIdentityPath or ""
@@ -380,7 +380,7 @@ spec:
               acm_certificate,
               validation_record,
               _cf_dist,
-              irsa_record,            
+              irsa_record,
               _oidc_provider,
               s3_bucket,
               s3_discovery,
