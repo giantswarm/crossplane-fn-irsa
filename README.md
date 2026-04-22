@@ -39,12 +39,14 @@ IRSAClaim (user input)
 The Go function runs first and performs AWS API calls to discover existing infrastructure and generate OIDC-related files. It patches results into the XR's `status` fields so that step 2 can use them.
 
 **For standard AWS regions**, the function:
+
 1. Queries **Route53** to find the hosted zone matching the cluster domain
 2. Queries **CloudFront** to find an existing distribution matching `irsa.<domain>`
 3. Generates the **OIDC discovery document** (`.well-known/openid-configuration`) pointing to `https://irsa.<domain>`
 4. Reads the cluster's service account signing key and generates a **JWKS file** (`keys.json`)
 
 **For China regions** (`cn-north-1`, `cn-northwest-1`), the function:
+
 1. Queries **IAM** for existing OpenID Connect providers
 2. Generates the **OIDC discovery document** pointing to `https://s3.<region>.amazonaws.com.cn/<bucket>`
 3. Generates the **JWKS file** from the service account signing key
