@@ -1,0 +1,78 @@
+apiVersion: pkg.crossplane.io/v1beta1
+kind: DeploymentRuntimeConfig
+metadata:
+  name: {{ .Values.runtimeConfig.name }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  deploymentTemplate:
+    spec:
+      selector: {}
+      template:
+        spec:
+          containers:
+            - name: package-runtime
+              {{- if .Values.runtimeConfig.debug }}
+              args:
+                - "--debug"
+              {{- end }}
+              volumeMounts:
+                - mountPath: /var/run/secrets/eks.amazonaws.com/serviceaccount
+                  name: aws-iam-token
+                  readOnly: true
+              env:
+                - name: AWS_REGION
+                  value: {{ .Values.runtimeConfig.awsRegion }}
+          serviceAccountName: {{ .Values.runtimeConfig.name }}
+          volumes:
+            - name: aws-iam-token
+              projected:
+                defaultMode: 420
+                sources:
+                - serviceAccountToken:
+                    audience: {{ if hasPrefix "cn-" .Values.runtimeConfig.awsRegion }}sts.amazonaws.com.cn{{ else }}sts.amazonaws.com{{ end }}
+                    expirationSeconds: 86400
+                    path: token
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Values.runtimeConfig.name }}
+  namespace: {{ .Values.runtimeConfig.namespace }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: {{ .Values.runtimeConfig.name }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+rules:
+- apiGroups:
+  - aws.upbound.io
+  resources:
+  - providerconfigs
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: {{ .Values.runtimeConfig.name }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+subjects:
+- kind: ServiceAccount
+  name: {{ .Values.runtimeConfig.name }}
+  namespace: {{ .Values.runtimeConfig.namespace }}
+roleRef:
+  kind: ClusterRole
+  name: {{ .Values.runtimeConfig.name }}
+  apiGroup: rbac.authorization.k8s.io
