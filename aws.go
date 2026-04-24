@@ -5,6 +5,8 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/acm"
+	acmtypes "github.com/aws/aws-sdk-go-v2/service/acm/types"
 	"github.com/aws/aws-sdk-go-v2/service/cloudfront"
 	cloudfronttypes "github.com/aws/aws-sdk-go-v2/service/cloudfront/types"
 	"github.com/aws/aws-sdk-go-v2/service/iam"
@@ -16,6 +18,11 @@ import (
 	xfnaws "github.com/giantswarm/xfnlib/pkg/auth/aws"
 	"github.com/giantswarm/xfnlib/pkg/composite"
 )
+
+// acmCertificateRegion is the region ACM certificates must live in for
+// CloudFront distributions. CloudFront only accepts viewer certificates from
+// us-east-1, regardless of where the distribution's other resources are.
+const acmCertificateRegion = "us-east-1"
 
 type Route53Api interface {
 	ListHostedZones(ctx context.Context,
@@ -43,6 +50,12 @@ type IamApi interface {
 	GetOpenIDConnectProvider(ctx context.Context,
 		params *iam.GetOpenIDConnectProviderInput,
 		optFns ...func(*iam.Options)) (*iam.GetOpenIDConnectProviderOutput, error)
+}
+
+type AcmApi interface {
+	ListCertificates(ctx context.Context,
+		params *acm.ListCertificatesInput,
+		optFns ...func(*acm.Options)) (*acm.ListCertificatesOutput, error)
 }
 
 func GetHostedZones(c context.Context, api Route53Api, input *route53.ListHostedZonesInput) (*route53.ListHostedZonesOutput, error) {
@@ -92,6 +105,15 @@ var (
 			})
 		}
 		return sts.NewFromConfig(cfg)
+	}
+
+	getAcmClient = func(cfg aws.Config, ep string) AcmApi {
+		if ep != "" {
+			return acm.NewFromConfig(cfg, func(o *acm.Options) {
+				o.BaseEndpoint = &ep
+			})
+		}
+		return acm.NewFromConfig(cfg)
 	}
 
 	awsConfig = func(region, providerCfgRef *string, log logging.Logger) (aws.Config, map[string]string, error) {
@@ -275,12 +297,137 @@ func (f *Function) DiscoverDistribution(domain string, region string, providerCo
 		return err
 	}
 
-	distributionId := matchingDistributions[0].Id
+	matched := matchingDistributions[0]
+	distributionId := matched.Id
 	f.log.Info("Found matching distribution", "distributionId", distributionId, "domain", domain)
 
 	err = f.patchFieldValueToObject("status.importResources.cloudfrontDistributionId", distributionId, composed.DesiredComposite.Resource)
 	if err != nil {
 		f.log.Info("Failed to patch distribution ID", "error", err, "distributionId", distributionId)
+		return err
+	}
+
+	// Extract the OAI ID from the matched distribution's S3 origin so the OAI
+	// managed resource can adopt it. The live distribution is the authoritative
+	// source for which OAI is in use.
+	if oaiId := extractOaiIdFromDistribution(matched); oaiId != "" {
+		f.log.Info("Found OAI referenced by distribution", "oaiId", oaiId, "distributionId", distributionId)
+		if err = f.patchFieldValueToObject("status.importResources.cloudfrontOaiId", oaiId, composed.DesiredComposite.Resource); err != nil {
+			f.log.Info("Failed to patch OAI ID", "error", err, "oaiId", oaiId)
+			return err
+		}
+	} else {
+		f.log.Debug("Distribution has no S3 origin with OAI", "distributionId", distributionId)
+	}
+
+	return nil
+}
+
+// extractOaiIdFromDistribution returns the OAI ID referenced by the first S3
+// origin with a non-empty OriginAccessIdentity, or "" if none is found.
+// CloudFront stores the reference as "origin-access-identity/cloudfront/<ID>";
+// Crossplane's OriginAccessIdentity MR uses just <ID> as its external-name.
+func extractOaiIdFromDistribution(dist cloudfronttypes.DistributionSummary) string {
+	if dist.Origins == nil {
+		return ""
+	}
+	for _, origin := range dist.Origins.Items {
+		if origin.S3OriginConfig == nil || origin.S3OriginConfig.OriginAccessIdentity == nil {
+			continue
+		}
+		path := *origin.S3OriginConfig.OriginAccessIdentity
+		if path == "" {
+			continue
+		}
+		idx := strings.LastIndex(path, "/")
+		if idx < 0 || idx == len(path)-1 {
+			continue
+		}
+		return path[idx+1:]
+	}
+	return ""
+}
+
+func (f *Function) DiscoverCertificate(domain string, providerConfigRef string, composed *composite.Composition) (err error) {
+	var (
+		cfg      aws.Config
+		services map[string]string
+		client   AcmApi
+	)
+
+	region := acmCertificateRegion
+	f.log.Debug("Discovering ACM certificate", "domain", domain, "region", region)
+
+	if cfg, services, err = awsConfig(&region, &providerConfigRef, f.log); err != nil {
+		f.log.Info("Failed to load AWS config", "error", err, "region", region)
+		err = errors.Wrap(err, "failed to load aws config")
+		return err
+	}
+
+	var ep string
+	if v, ok := services["acm"]; ok {
+		ep = v
+		f.log.Debug("Using custom ACM endpoint", "endpoint", ep)
+	}
+
+	client = getAcmClient(cfg, ep)
+
+	var matching []acmtypes.CertificateSummary
+	var nextToken *string
+	for {
+		out, lerr := client.ListCertificates(context.Background(), &acm.ListCertificatesInput{
+			NextToken: nextToken,
+		})
+		if lerr != nil {
+			f.log.Info("Failed to list ACM certificates", "error", lerr)
+			return lerr
+		}
+
+		for _, cert := range out.CertificateSummaryList {
+			if cert.DomainName == nil || !strings.EqualFold(*cert.DomainName, domain) {
+				continue
+			}
+			if cert.Status == acmtypes.CertificateStatusFailed ||
+				cert.Status == acmtypes.CertificateStatusValidationTimedOut {
+				continue
+			}
+			matching = append(matching, cert)
+		}
+
+		if out.NextToken == nil || *out.NextToken == "" {
+			break
+		}
+		nextToken = out.NextToken
+	}
+
+	if len(matching) == 0 {
+		f.log.Debug("No matching ACM certificate found", "domain", domain)
+		return nil
+	}
+
+	chosen := matching[0]
+	if len(matching) > 1 {
+		// Prefer an ISSUED certificate when multiple match. Warn so the operator
+		// can clean up stragglers — this shouldn't happen in steady state.
+		for _, cert := range matching {
+			if cert.Status == acmtypes.CertificateStatusIssued {
+				chosen = cert
+				break
+			}
+		}
+		f.log.Info("Multiple ACM certificates matched domain; preferring ISSUED",
+			"domain", domain, "count", len(matching), "chosenArn", chosen.CertificateArn)
+	}
+
+	if chosen.CertificateArn == nil || *chosen.CertificateArn == "" {
+		f.log.Info("Matched ACM certificate has no ARN", "domain", domain)
+		return nil
+	}
+
+	f.log.Info("Found matching ACM certificate", "arn", *chosen.CertificateArn, "domain", domain)
+
+	if err = f.patchFieldValueToObject("status.importResources.certificateArn", *chosen.CertificateArn, composed.DesiredComposite.Resource); err != nil {
+		f.log.Info("Failed to patch certificate ARN", "error", err, "arn", *chosen.CertificateArn)
 		return err
 	}
 
