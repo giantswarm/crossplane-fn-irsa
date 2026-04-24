@@ -140,9 +140,8 @@ func (f *Function) GetAccountId(region, pcr *string) (id string, err error) {
 	}
 
 	var ep string
-	var ok bool
-	if _, ok = services["sts"]; ok {
-		ep = services["sts"]
+	if v, ok := services["sts"]; ok {
+		ep = v
 	}
 
 	stsclient = getStsClient(cfg, ep)
@@ -174,9 +173,8 @@ func (f *Function) DiscoverHostedZone(domain string, region string, providerConf
 	}
 
 	var ep string
-	var ok bool
-	if _, ok = services["route53"]; ok {
-		ep = services["route53"]
+	if v, ok := services["route53"]; ok {
+		ep = v
 	}
 
 	client = getRoute53Client(cfg, ep)
@@ -259,27 +257,48 @@ func (f *Function) DiscoverDistribution(domain string, region string, providerCo
 	}
 
 	var ep string
-	var ok bool
-	if _, ok = services["cloudfront"]; ok {
-		ep = services["cloudfront"]
+	if v, ok := services["cloudfront"]; ok {
+		ep = v
 		f.log.Debug("Using custom CloudFront endpoint", "endpoint", ep)
 	}
 
 	client = getCloudFrontClient(cfg, ep)
 
-	var distributions *cloudfront.ListDistributionsOutput
-	distributions, err = client.ListDistributions(context.Background(), &cloudfront.ListDistributionsInput{})
-	if err != nil {
-		f.log.Info("Failed to list CloudFront distributions", "error", err)
-		return err
+	var allDistributions []cloudfronttypes.DistributionSummary
+	var marker *string
+	for {
+		distributions, lerr := client.ListDistributions(context.Background(), &cloudfront.ListDistributionsInput{
+			Marker: marker,
+		})
+		if lerr != nil {
+			f.log.Info("Failed to list CloudFront distributions", "error", lerr)
+			return lerr
+		}
+
+		if distributions.DistributionList == nil {
+			break
+		}
+
+		allDistributions = append(allDistributions, distributions.DistributionList.Items...)
+
+		if distributions.DistributionList.IsTruncated == nil || !*distributions.DistributionList.IsTruncated {
+			break
+		}
+		if distributions.DistributionList.NextMarker == nil || *distributions.DistributionList.NextMarker == "" {
+			break
+		}
+		marker = distributions.DistributionList.NextMarker
 	}
 
-	f.log.Debug("Found distributions", "count", len(distributions.DistributionList.Items))
+	f.log.Debug("Found distributions", "count", len(allDistributions))
 
 	var matchingDistributions []cloudfronttypes.DistributionSummary
-	for _, dist := range distributions.DistributionList.Items {
+	for _, dist := range allDistributions {
+		if dist.Aliases == nil {
+			continue
+		}
 		for _, alias := range dist.Aliases.Items {
-			if alias == domain {
+			if strings.EqualFold(alias, domain) {
 				matchingDistributions = append(matchingDistributions, dist)
 				f.log.Debug("Found matching distribution", "distributionId", dist.Id, "alias", alias)
 			}
@@ -416,7 +435,8 @@ func (f *Function) DiscoverCertificate(domain string, providerConfigRef string, 
 			}
 		}
 		f.log.Info("Multiple ACM certificates matched domain; preferring ISSUED",
-			"domain", domain, "count", len(matching), "chosenArn", chosen.CertificateArn)
+			"domain", domain, "count", len(matching),
+			"chosenArn", chosen.CertificateArn, "chosenStatus", string(chosen.Status))
 	}
 
 	if chosen.CertificateArn == nil || *chosen.CertificateArn == "" {
@@ -450,9 +470,8 @@ func (f *Function) DiscoverOpenIdProvider(domain string, region string, provider
 	}
 
 	var ep string
-	var ok bool
-	if _, ok = services["iam"]; ok {
-		ep = services["iam"]
+	if v, ok := services["iam"]; ok {
+		ep = v
 		f.log.Debug("Using custom IAM endpoint", "endpoint", ep)
 	}
 
