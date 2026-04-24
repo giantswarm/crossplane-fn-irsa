@@ -80,6 +80,8 @@ spec:
           existing_cloudfront_id = oxr?.status?.importResources?.cloudfrontDistributionId or ""
           existing_oidc_id = oxr?.status?.importResources?.openIdProviderArn or ""
           existing_route53_id = oxr?.status?.importResources?.route53ZoneId or ""
+          existing_oai_id = oxr?.status?.importResources?.cloudfrontOaiId or ""
+          existing_cert_arn = oxr?.status?.importResources?.certificateArn or ""
 
           # ---------------------------------------------------------------------------
           # Managed resources
@@ -254,6 +256,7 @@ spec:
               apiVersion = "cloudfront.aws.upbound.io/v1beta1"
               kind       = "OriginAccessIdentity"
               metadata.name = oai_name
+              metadata.annotations = {}
               spec = {
                   providerConfigRef.name = provider_cfg
                   forProvider = {
@@ -262,12 +265,17 @@ spec:
                   }
               }
           }
+          if existing_oai_id != "":
+              cloudfront_oai.metadata.annotations = {
+                  "crossplane.io/external-name" = existing_oai_id
+              }
 
           # ACM Certificate (us-east-1 for CloudFront)
           acm_certificate = {
               apiVersion = "acm.aws.upbound.io/v1beta1"
               kind       = "Certificate"
               metadata.name = "${composition_name}-irsa-cloudfront-certificate"
+              metadata.annotations = {}
               spec = {
                   providerConfigRef.name = provider_cfg
                   forProvider = {
@@ -278,6 +286,10 @@ spec:
                   }
               }
           }
+          if existing_cert_arn != "":
+              acm_certificate.metadata.annotations = {
+                  "crossplane.io/external-name" = existing_cert_arn
+              }
           # Validation Route53 record for the ACM certificate
           cert_status = option("params")?.ocds?["${composition_name}-irsa-cloudfront-certificate"]?.Resource?.status or {}
           cert_val = {

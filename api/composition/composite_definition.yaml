@@ -87,6 +87,12 @@ spec:
                     cloudfrontDistributionId:
                       type: string
                       description: "ID of the Cloudfront distribution"
+                    cloudfrontOaiId:
+                      type: string
+                      description: "ID of the adopted Cloudfront Origin Access Identity"
+                    certificateArn:
+                      type: string
+                      description: "ARN of the adopted ACM certificate"
                 certificateValidation:
                   type: object
                   properties:
