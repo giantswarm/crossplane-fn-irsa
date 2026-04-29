@@ -1,0 +1,11 @@
+apiVersion: pkg.crossplane.io/v1beta1
+kind: Function
+metadata:
+  name: {{ .Values.function.name }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
+spec:
+  package: {{ .Values.registry.domain }}/{{ .Values.image.name }}:{{ .Values.image.tag | default .Chart.AppVersion }}
+  runtimeConfigRef:
+    name: {{ .Values.runtimeConfig.name }}
+  skipDependencyResolution: {{ .Values.function.skipDependencyResolution }}

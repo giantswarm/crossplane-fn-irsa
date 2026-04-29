@@ -1,7 +1,9 @@
 apiVersion: apiextensions.crossplane.io/v1
 kind: Composition
 metadata:
-  name: irsa-composition
+  name: {{ .Values.composition.name }}
+  labels:
+    {{- include "labels.common" . | nindent 4 }}
 spec:
   compositeTypeRef:
     apiVersion: crossplane.giantswarm.io/v1
@@ -10,12 +12,12 @@ spec:
   pipeline:
   - step: irsa-discovery
     functionRef:
-      name: function-irsa
+      name: {{ .Values.function.name }}
     input:
       apiVersion: irsa.fn.giantswarm.io
       kind: Input
       metadata:
-        namespace: crossplane
+        namespace: {{ .Values.runtimeConfig.namespace }}
       spec:
         domainRef: spec.domain
         regionRef: spec.region
@@ -26,7 +28,7 @@ spec:
         s3BucketNameRef: spec.bucketName
   - step: render-resources
     functionRef:
-      name: function-kcl
+      name: {{ .Values.composition.kclFunctionRef }}
     input:
       apiVersion: krm.kcl.dev/v1alpha1
       kind: KCLRun
@@ -141,7 +143,7 @@ spec:
                       region         = region
                       contentBase64  = s3_discovery_content
                       sourceHash     = crypto.md5(s3_discovery_content)
-                      tags           = {}
+                      tags           = _tags
                   }
               }
           }
@@ -161,7 +163,7 @@ spec:
                       region         = region
                       contentBase64  = s3_key_content
                       sourceHash     = crypto.md5(s3_key_content)
-                      tags           = {}
+                      tags           = _tags
                   }
               }
           }
@@ -401,4 +403,4 @@ spec:
 
   - step: automatically-detect-ready-composed-resources
     functionRef:
-      name: function-auto-ready
+      name: {{ .Values.composition.autoReadyFunctionRef }}
