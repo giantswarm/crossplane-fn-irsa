@@ -254,7 +254,7 @@ spec:
 
           # CloudFront Origin Access Identity (OAI)
           oai_name = "${composition_name}-irsa-s3-origin-access-identity"
-          cloudfront_oai = {
+          _cloudfront_oai = {
               apiVersion = "cloudfront.aws.upbound.io/v1beta1"
               kind       = "OriginAccessIdentity"
               metadata.name = oai_name
@@ -268,12 +268,12 @@ spec:
               }
           }
           if existing_oai_id != "":
-              cloudfront_oai.metadata.annotations = {
+              _cloudfront_oai.metadata.annotations = {
                   "crossplane.io/external-name" = existing_oai_id
               }
 
           # ACM Certificate (us-east-1 for CloudFront)
-          acm_certificate = {
+          _acm_certificate = {
               apiVersion = "acm.aws.upbound.io/v1beta1"
               kind       = "Certificate"
               metadata.name = "${composition_name}-irsa-cloudfront-certificate"
@@ -289,7 +289,7 @@ spec:
               }
           }
           if existing_cert_arn != "":
-              acm_certificate.metadata.annotations = {
+              _acm_certificate.metadata.annotations = {
                   "crossplane.io/external-name" = existing_cert_arn
               }
           # Validation Route53 record for the ACM certificate
@@ -390,8 +390,8 @@ spec:
 
           if not is_china_region:
             _resources = [
-              cloudfront_oai,
-              acm_certificate,
+              _cloudfront_oai,
+              _acm_certificate,
               validation_record,
               _cf_dist,
               irsa_record,
