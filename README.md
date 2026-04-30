@@ -41,15 +41,28 @@ The Go function runs first and performs AWS API calls to discover existing infra
 **For standard AWS regions**, the function:
 
 1. Queries **Route53** to find the hosted zone matching the cluster domain
-2. Queries **CloudFront** to find an existing distribution matching `irsa.<domain>`
-3. Generates the **OIDC discovery document** (`.well-known/openid-configuration`) pointing to `https://irsa.<domain>`
-4. Reads the cluster's service account signing key and generates a **JWKS file** (`keys.json`)
+2. Queries **CloudFront** to find an existing distribution matching `irsa.<domain>`, and when found, reads its S3 origin to recover the referenced **Origin Access Identity (OAI)** so both get adopted
+3. Queries **ACM** in `us-east-1` for an existing certificate with domain `irsa.<domain>` (preferring `ISSUED`)
+4. Generates the **OIDC discovery document** (`.well-known/openid-configuration`) pointing to `https://irsa.<domain>`
+5. Reads the cluster's service account signing key and generates a **JWKS file** (`keys.json`)
 
 **For China regions** (`cn-north-1`, `cn-northwest-1`), the function:
 
 1. Queries **IAM** for existing OpenID Connect providers
 2. Generates the **OIDC discovery document** pointing to `https://s3.<region>.amazonaws.com.cn/<bucket>`
 3. Generates the **JWKS file** from the service account signing key
+
+### Adoption of pre-existing resources
+
+When the discovery step finds a live resource, its identifier is patched into `status.importResources.*` and the KCL renderer attaches a `crossplane.io/external-name` annotation to the corresponding managed resource. This lets the function take over an existing stack (e.g. after recreating the Crossplane claim) rather than failing with `EntityAlreadyExists`.
+
+| Resource | Matched by | Status field |
+|----------|-----------|--------------|
+| Route53 hosted zone | Exact domain match | `status.importResources.route53ZoneId` |
+| IAM OIDC provider | ARN contains the IRSA URL | `status.importResources.openIdProviderArn` |
+| CloudFront distribution | `irsa.<domain>` alias | `status.importResources.cloudfrontDistributionId` |
+| CloudFront OAI | Referenced by the matched distribution's S3 origin | `status.importResources.cloudfrontOaiId` |
+| ACM certificate | `DomainName == irsa.<domain>` in `us-east-1`, preferring `ISSUED` | `status.importResources.certificateArn` |
 
 ### Step 2: Resource Rendering (function-kcl)
 

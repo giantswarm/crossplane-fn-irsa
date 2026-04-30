@@ -5,6 +5,7 @@ go 1.25.0
 require (
 	github.com/alecthomas/kong v1.15.0
 	github.com/aws/aws-sdk-go-v2 v1.41.6
+	github.com/aws/aws-sdk-go-v2/service/acm v1.38.2
 	github.com/aws/aws-sdk-go-v2/service/cloudfront v1.61.1
 	github.com/aws/aws-sdk-go-v2/service/iam v1.53.8
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.62.6
