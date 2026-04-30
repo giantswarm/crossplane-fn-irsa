@@ -82,8 +82,8 @@ spec:
           existing_cloudfront_id = oxr?.status?.importResources?.cloudfrontDistributionId or ""
           existing_oidc_id = oxr?.status?.importResources?.openIdProviderArn or ""
           existing_route53_id = oxr?.status?.importResources?.route53ZoneId or ""
-          existing_oai_id = oxr?.status?.importResources?.cloudfrontOaiId or ""
-          existing_cert_arn = oxr?.status?.importResources?.certificateArn or ""
+          existing_oai_id = dxr?.status?.importResources?.cloudfrontOaiId or oxr?.status?.importResources?.cloudfrontOaiId or ""
+          existing_cert_arn = dxr?.status?.importResources?.certificateArn or oxr?.status?.importResources?.certificateArn or ""
 
           # ---------------------------------------------------------------------------
           # Managed resources
