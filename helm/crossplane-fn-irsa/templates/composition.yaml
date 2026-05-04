@@ -386,21 +386,30 @@ spec:
           }
 
           # Always include core IAM/S3 resources. Append CloudFront stack only for non-China regions.
+          # Skip Route53 records on reconciliation cycles where their target value
+          # isn't populated yet — `records: [None]` fails OpenAPI validation
+          # ("associative list ... has an element that's an explicit null"),
+          # which makes function-kcl return a fatal error and blocks every other
+          # resource in the pipeline from being applied. The ACM validation
+          # record waits for the cert's domainValidationOptions; the apex CNAME
+          # waits for the CloudFront distribution's domainName.
           _resources = []
 
           if not is_china_region:
             _resources = [
               _cloudfront_oai,
               _acm_certificate,
-              validation_record,
               _cf_dist,
-              irsa_record,
               _oidc_provider,
               s3_bucket,
               s3_discovery,
               s3_keys,
               s3_bucket_policy,
             ]
+            if cert_val.recordValue:
+              _resources += [validation_record]
+            if cloudfront_domain:
+              _resources += [irsa_record]
           else:
             _resources = [
               _oidc_provider,
