@@ -87,6 +87,11 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 			response.Fatal(rsp, errors.Wrapf(err, "cannot discover distribution resources for domain %q", domain))
 			return rsp, nil
 		}
+
+		if err = f.DiscoverCertificate(irsaDomain, providerConfig, composed); err != nil {
+			response.Fatal(rsp, errors.Wrapf(err, "cannot discover ACM certificate for domain %q", irsaDomain))
+			return rsp, nil
+		}
 	}
 
 	// if in china regions
