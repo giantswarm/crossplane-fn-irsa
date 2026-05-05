@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-05-05
+
 ### Added
 
 - Adopt pre-existing CloudFront Origin Access Identity by reading it from the matched distribution's S3 origin.
@@ -36,6 +38,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync workflows
 - Use proper versioning when pushing the Crossplane function image
 
-[Unreleased]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/giantswarm/crossplane-fn-irsa/releases/tag/v0.1.0
