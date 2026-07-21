@@ -145,7 +145,7 @@ spec:
                       region         = region
                       contentBase64  = s3_discovery_content
                       sourceHash     = crypto.md5(s3_discovery_content)
-                      tags           = _tags
+                      tags           = {}
                   }
               }
           }
@@ -165,7 +165,7 @@ spec:
                       region         = region
                       contentBase64  = s3_key_content
                       sourceHash     = crypto.md5(s3_key_content)
-                      tags           = _tags
+                      tags           = {}
                   }
               }
           }

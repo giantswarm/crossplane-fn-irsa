@@ -1,7 +1,7 @@
 version: 2.1
 
 orbs:
-  architect: giantswarm/architect@7.0.0
+  architect: giantswarm/architect@9.5.5
 
 workflows:
   build-workflow:
@@ -49,10 +49,6 @@ jobs:
     steps:
       - checkout
       - architect/image-prepare-tag
-      - persist_to_workspace:
-          root: .
-          paths:
-            - .docker_image_tag
 
   build-and-push:
     machine:
@@ -67,7 +63,7 @@ jobs:
             REGISTRY_SERVER=gsoci.azurecr.io
             REGISTRY=${REGISTRY_SERVER}/giantswarm
             echo "$ACR_GSOCI_PASSWORD" | docker login --username $ACR_GSOCI_USERNAME --password-stdin ${REGISTRY_SERVER}
-            TAG=$(cat .docker_image_tag)
+            TAG=$(cat .build_version)
 
             curl -sL https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh | sh
 
