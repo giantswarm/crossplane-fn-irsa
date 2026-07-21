@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-07-21
+
 ### Fixed
 
 - Avoid tagging S3 bucket objects since they are restricted to 10 tags and they are not actively used (this fix got lost in the Helm packaging migration, re-applying the fix now)
@@ -42,7 +44,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync workflows
 - Use proper versioning when pushing the Crossplane function image
 
-[Unreleased]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.1...HEAD
+[0.3.1]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/giantswarm/crossplane-fn-irsa/releases/tag/v0.1.0
