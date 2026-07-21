@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Avoid tagging S3 bucket objects since they are restricted to 10 tags and they are not actively used (this fix got lost in the Helm packaging migration, re-applying the fix now)
+
 ## [0.3.0] - 2026-05-05
 
 ### Added
