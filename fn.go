@@ -4,8 +4,8 @@ import (
 	"context"
 	"strings"
 
-	"github.com/crossplane/crossplane-runtime/pkg/errors"
-	"github.com/crossplane/crossplane-runtime/pkg/fieldpath"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/errors"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/fieldpath"
 	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
 
 	"github.com/crossplane/function-sdk-go/request"
