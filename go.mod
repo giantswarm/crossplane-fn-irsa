@@ -12,7 +12,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.48.0
 	github.com/crossplane/crossplane-runtime v1.20.6
 	github.com/crossplane/function-sdk-go v0.4.0
-	github.com/giantswarm/xfnlib v0.0.0-20260105112726-0ff9c8e2066f
+	github.com/giantswarm/xfnlib v0.0.0-20260817122542-ca21ff4f962e
 	gopkg.in/square/go-jose.v2 v2.6.0
 	k8s.io/api v0.35.0
 	k8s.io/apimachinery v0.35.0
