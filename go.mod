@@ -6,7 +6,7 @@ require (
 	github.com/alecthomas/kong v1.16.1
 	github.com/aws/aws-sdk-go-v2 v1.47.1
 	github.com/aws/aws-sdk-go-v2/service/acm v1.50.1
-	github.com/aws/aws-sdk-go-v2/service/cloudfront v1.73.1
+	github.com/aws/aws-sdk-go-v2/service/cloudfront v1.74.0
 	github.com/aws/aws-sdk-go-v2/service/iam v1.64.1
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.70.1
 	github.com/aws/aws-sdk-go-v2/service/sts v1.51.1
