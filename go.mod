@@ -110,3 +110,15 @@ require (
 	sigs.k8s.io/structured-merge-diff/v6 v6.3.0 // indirect
 	sigs.k8s.io/yaml v1.6.0 // indirect
 )
+
+replace github.com/containerd/containerd v1.7.22 => github.com/containerd/containerd v1.7.36
+
+replace github.com/go-chi/chi/v5 v5.1.0 => github.com/go-chi/chi/v5 v5.3.2
+
+replace github.com/go-jose/go-jose/v4 v4.1.3 => github.com/go-jose/go-jose/v4 v4.1.5
+
+replace github.com/moby/spdystream v0.5.0 => github.com/moby/spdystream v0.5.1
+
+replace github.com/moby/sys/user v0.3.0 => github.com/moby/sys/user v0.4.1
+
+replace github.com/quic-go/quic-go v0.48.2 => github.com/quic-go/quic-go v0.63.0
