@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Never write `keys.json` or `.well-known/openid-configuration` to S3 empty. Both `BucketObject`s were rendered unconditionally, so a cycle where `status.s3Keys` / `status.s3Discovery` was not yet set created a zero-byte object. The provider late-inits `atProvider` from spec, so it then reported `Synced=True`/`Ready=True` forever and never re-uploaded, breaking every IRSA workload with `InvalidIdentityToken`. Both objects are now rendered only once their content exists.
+- KCL reads `s3Keys` and `s3Discovery` from `dxr` before falling back to `oxr`, so the content lands in the same reconciliation cycle the discovery function generates it in instead of one cycle later.
 - The `helm.sh/chart` label is valid for long chart versions: the 63-character cut trims the whole trailing run of `-`, `.` and `_`.
 
 ## [0.3.1] - 2026-07-21

@@ -131,7 +131,9 @@ spec:
           }
 
           # Bucket object: OIDC discovery doc
-          s3_discovery_content = oxr?.status?.s3Discovery or ""
+          # Read from dxr first: the discovery function patches these in the same
+          # reconciliation cycle, so oxr alone lags one cycle behind.
+          s3_discovery_content = dxr?.status?.s3Discovery or oxr?.status?.s3Discovery or ""
           s3_discovery = {
               apiVersion = "s3.aws.upbound.io/v1beta1"
               kind       = "BucketObject"
@@ -150,7 +152,7 @@ spec:
               }
           }
 
-          s3_key_content = oxr?.status?.s3Keys or ""
+          s3_key_content = dxr?.status?.s3Keys or oxr?.status?.s3Keys or ""
           # Bucket object: JWKS keys
           s3_keys = {
               apiVersion = "s3.aws.upbound.io/v1beta1"
@@ -393,6 +395,9 @@ spec:
           # resource in the pipeline from being applied. The ACM validation
           # record waits for the cert's domainValidationOptions; the apex CNAME
           # waits for the CloudFront distribution's domainName.
+          # Skip the two bucket objects until their content exists, so neither is
+          # ever written to S3 empty — the provider late-inits atProvider from spec
+          # and would report an empty object as Synced/Ready for good.
           _resources = []
 
           if not is_china_region:
@@ -402,10 +407,12 @@ spec:
               _cf_dist,
               _oidc_provider,
               s3_bucket,
-              s3_discovery,
-              s3_keys,
               s3_bucket_policy,
             ]
+            if s3_discovery_content != "":
+              _resources += [s3_discovery]
+            if s3_key_content != "":
+              _resources += [s3_keys]
             if cert_val.recordValue:
               _resources += [validation_record]
             if cloudfront_domain:
@@ -417,9 +424,11 @@ spec:
               s3_bucket_policy,
               s3_bucket_public_access_block,
               s3_bucket_ownership,
-              s3_discovery,
-              s3_keys,
             ]
+            if s3_discovery_content != "":
+              _resources += [s3_discovery]
+            if s3_key_content != "":
+              _resources += [s3_keys]
           items = _resources
 
   - step: automatically-detect-ready-composed-resources
