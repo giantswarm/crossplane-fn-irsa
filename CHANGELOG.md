@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-10-14
+
 ### Fixed
 
 - Never write `keys.json` or `.well-known/openid-configuration` to S3 empty. Both `BucketObject`s were rendered unconditionally, so a cycle where `status.s3Keys` / `status.s3Discovery` was not yet set created a zero-byte object. The provider late-inits `atProvider` from spec, so it then reported `Synced=True`/`Ready=True` forever and never re-uploaded, breaking every IRSA workload with `InvalidIdentityToken`. Both objects are now rendered only once their content exists.
@@ -50,7 +52,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync workflows
 - Use proper versioning when pushing the Crossplane function image
 
-[Unreleased]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.2...HEAD
+[0.3.2]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.1.0...v0.2.0
