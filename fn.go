@@ -114,7 +114,9 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 
 	key, err := f.ServiceAccountSecret(oxr.Resource.GetLabels()["crossplane.io/claim-namespace"], oxr.Resource.GetLabels()["crossplane.io/claim-name"])
 	if err != nil {
-		f.log.Debug("cannot get service account secret", "error", err)
+		// Not fatal: the secret appears later during bootstrap. The KCL step skips
+		// the keys.json object until status.s3Keys is set, so nothing is written empty.
+		f.log.Info("cannot get service account secret, skipping JWKS generation this cycle", "error", err)
 	} else {
 		if err = f.GenerateKeysFile(key, input.Spec.S3KeysPatchToRef, composed); err != nil {
 			response.Fatal(rsp, errors.Wrapf(err, "cannot generate keys file for domain %q", domain))
