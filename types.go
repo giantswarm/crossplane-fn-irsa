@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
