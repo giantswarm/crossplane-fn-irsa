@@ -1,3 +1,10 @@
-# Affects all versions of archiver which is required by vault.
-# Taken from: https://github.com/giantswarm/opsctl/pull/1072/files#diff-bbe4a7fb12c43622bce7c6840c770e9995be614626a219942ca138403629cb69R1
-CVE-2019-10743 until=2021-10-17
+CVE-2025-59530 until=2026-11-27 # github.com/quic-go/quic-go@v0.48.2 since=2026-10-28
+CVE-2025-64702 until=2026-11-27 # github.com/quic-go/quic-go@v0.48.2 since=2026-10-28
+CVE-2026-40898 until=2026-11-27 # github.com/quic-go/quic-go@v0.48.2 since=2026-10-28
+CVE-2026-61801 until=2026-11-27 # github.com/moby/sys/user@v0.3.0 since=2026-10-28
+CVE-2026-35469 until=2026-11-27 # github.com/moby/spdystream@v0.5.0 since=2026-10-28
+CVE-2026-116585 until=2026-11-27 # github.com/go-jose/go-jose/v4@v4.1.4 since=2026-10-28
+CVE-2026-116586 until=2026-11-27 # github.com/go-jose/go-jose/v4@v4.1.4 since=2026-10-28
+CVE-2026-114437 until=2026-11-27 # github.com/go-chi/chi/v5@v5.1.0 since=2026-10-28
+CVE-2025-71405 until=2026-11-27 # github.com/go-chi/chi/v5@v5.1.0 since=2026-10-28
+CVE-2026-72816 until=2026-11-27 # github.com/go-chi/chi/v5@v5.1.0 since=2026-10-28
