@@ -93,8 +93,8 @@ github.com/fsnotify/fsnotify v1.9.0 h1:2Ml+OJNzbYCTzsxtv8vKSFD9PbJjmhYF14k/jKC7S
 github.com/fsnotify/fsnotify v1.9.0/go.mod h1:8jBTzvmWwFyi3Pb8djgCCO5IBqzKJ/Jwo8TRcHyHii0=
 github.com/fxamacker/cbor/v2 v2.9.0 h1:NpKPmjDBgUfBms6tr6JZkTHtfFGcMKsw3eGcmD/sapM=
 github.com/fxamacker/cbor/v2 v2.9.0/go.mod h1:vM4b+DJCtHn+zz7h3FFp/hDAI9WNWCsZj23V5ytsSxQ=
-github.com/giantswarm/xfnlib v0.0.0-20261022133053-9366b8293840 h1:kXOKQPy6y8GcjL3PMzCJUOPjK0nNzS0+FHgy9Gs5/3w=
-github.com/giantswarm/xfnlib v0.0.0-20261022133053-9366b8293840/go.mod h1:0XJReMOGg0cuYGaFTNiuc5kCVg2WLmJAAxexKVFodGA=
+github.com/giantswarm/xfnlib v0.0.0-20261027221237-2de6114eb332 h1:oHLhMcVz0thzSWmF6MRgmdreQ1y08ILHCrhy66rZdG4=
+github.com/giantswarm/xfnlib v0.0.0-20261027221237-2de6114eb332/go.mod h1:0XJReMOGg0cuYGaFTNiuc5kCVg2WLmJAAxexKVFodGA=
 github.com/go-ini/ini v1.67.0 h1:z6ZrTEZqSWOTyH2FlglNbNgARyHG8oLW9gMELqKr06A=
 github.com/go-ini/ini v1.67.0/go.mod h1:ByCAeIL28uOIIG0E3PJtZPDL8WnHpFKFOtgjp+3Ies8=
 github.com/go-json-experiment/json v0.0.0-20250417205406-170dfdcf87d1 h1:+VexzzkMLb1tnvpuQdGT/DicIRW7MN8ozsXqBMgp0Hk=
