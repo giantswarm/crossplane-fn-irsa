@@ -37,6 +37,7 @@ spec:
       spec:
         target: Resources
         source: |
+          import base64
           import crypto
 
           # IRSA composition rendered via KCL for Crossplane
@@ -130,6 +131,15 @@ spec:
               }
           }
 
+          # S3's ETag for a single-part SSE-S3 upload is the MD5 of the object bytes.
+          # Setting it explicitly (with SSE-S3 pinned on the object) keeps the
+          # provider from late-initialising a stale etag into spec, which makes it
+          # see drift and re-upload forever once the content changes. The content
+          # is base64, so hash the decoded bytes.
+          _etag = lambda content: str -> str {
+              crypto.md5(base64.decode(content)) if content else ""
+          }
+
           # Bucket object: OIDC discovery doc
           # Read from dxr first: the discovery function patches these in the same
           # reconciliation cycle, so oxr alone lags one cycle behind.
@@ -147,6 +157,8 @@ spec:
                       region         = region
                       contentBase64  = s3_discovery_content
                       sourceHash     = crypto.md5(s3_discovery_content)
+                      serverSideEncryption = "AES256"
+                      etag           = _etag(s3_discovery_content)
                       tags           = {}
                   }
               }
@@ -167,6 +179,8 @@ spec:
                       region         = region
                       contentBase64  = s3_key_content
                       sourceHash     = crypto.md5(s3_key_content)
+                      serverSideEncryption = "AES256"
+                      etag           = _etag(s3_key_content)
                       tags           = {}
                   }
               }
