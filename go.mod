@@ -10,7 +10,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/iam v1.64.5
 	github.com/aws/aws-sdk-go-v2/service/route53 v1.70.5
 	github.com/aws/aws-sdk-go-v2/service/sts v1.51.5
-	github.com/crossplane/crossplane-runtime v1.20.6
+	github.com/crossplane/crossplane-runtime v1.20.12
 	github.com/crossplane/function-sdk-go v0.4.0
 	github.com/giantswarm/xfnlib v0.0.0-20261022133053-9366b8293840
 	gopkg.in/square/go-jose.v2 v2.6.0
