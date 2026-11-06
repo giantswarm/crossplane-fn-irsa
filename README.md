@@ -1,6 +1,6 @@
 # crossplane-fn-irsa
 
-A [Crossplane Composition Function](https://docs.crossplane.io/latest/concepts/composition-functions/) that automates the setup of **IAM Roles for Service Accounts (IRSA)** infrastructure in AWS. IRSA enables Kubernetes service accounts to assume AWS IAM roles, allowing pods to access AWS services without embedding static credentials.
+A [Crossplane Composition Function](https://docs.crossplane.io/latest/composition/compositions/) that automates the setup of **IAM Roles for Service Accounts (IRSA)** infrastructure in AWS. IRSA enables Kubernetes service accounts to assume AWS IAM roles, allowing pods to access AWS services without embedding static credentials.
 
 ## How the Composition Works
 
