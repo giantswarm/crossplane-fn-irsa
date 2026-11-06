@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Set `etag` (MD5 of the decoded content) and `serverSideEncryption: AES256` on the IRSA `BucketObject`s.
+
 ## [0.3.2] - 2026-10-14
 
 ### Fixed
