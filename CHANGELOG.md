@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-10
+
+### Changed
+
+- This release aggregates all changes from release candidate 0.4.0-rc.1.
+
+### Fixed
+
+- Set `etag` (MD5 of the decoded content) and `serverSideEncryption: AES256` on the IRSA `BucketObject`s.
+
 ## [0.4.0-rc.1] - 2026-11-06
 
 ### Fixed
@@ -58,7 +68,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync workflows
 - Use proper versioning when pushing the Crossplane function image
 
-[Unreleased]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.4.0-rc.1...HEAD
+[Unreleased]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.4.0-rc.1...v0.4.0
 [0.4.0-rc.1]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.2...v0.4.0-rc.1
 [0.3.2]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.0...v0.3.1
