@@ -18,8 +18,8 @@ func TestKeepKeysFile(t *testing.T) {
 		want     string
 	}{
 		"observed keys are kept": {
-			observed: map[string]any{"s3Keys": "eyJrZXlzIjpbXX0="},
-			want:     "eyJrZXlzIjpbXX0=",
+			observed: map[string]any{"s3Keys": "a2V5cw=="},
+			want:     "a2V5cw==",
 		},
 		"no observed keys": {
 			observed: nil,
