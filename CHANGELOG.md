@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Keep `status.s3Keys` when the `<cluster>-sa` secret is missing (e.g. after `clusterctl move`), so `keys.json` is no longer deleted from the OIDC bucket.
+
 ## [0.4.0] - 2026-11-10
 
 ### Changed

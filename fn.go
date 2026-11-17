@@ -9,6 +9,7 @@ import (
 	fnv1 "github.com/crossplane/function-sdk-go/proto/v1"
 
 	"github.com/crossplane/function-sdk-go/request"
+	"github.com/crossplane/function-sdk-go/resource"
 	"github.com/crossplane/function-sdk-go/response"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -114,9 +115,13 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 
 	key, err := f.ServiceAccountSecret(oxr.Resource.GetLabels()["crossplane.io/claim-namespace"], oxr.Resource.GetLabels()["crossplane.io/claim-name"])
 	if err != nil {
-		// Not fatal: the secret appears later during bootstrap. The KCL step skips
-		// the keys.json object until status.s3Keys is set, so nothing is written empty.
+		// Not fatal: the secret appears later during bootstrap, or was moved away
+		// (clusterctl move). Keep the last JWKS so keys.json is not deleted.
 		f.log.Info("cannot get service account secret, skipping JWKS generation this cycle", "error", err)
+		if err = f.keepKeysFile(oxr, input.Spec.S3KeysPatchToRef, composed); err != nil {
+			response.Fatal(rsp, errors.Wrap(err, "cannot keep previous keys file"))
+			return rsp, nil
+		}
 	} else {
 		if err = f.GenerateKeysFile(key, input.Spec.S3KeysPatchToRef, composed); err != nil {
 			response.Fatal(rsp, errors.Wrapf(err, "cannot generate keys file for domain %q", domain))
@@ -130,6 +135,15 @@ func (f *Function) RunFunction(_ context.Context, req *fnv1.RunFunctionRequest) 
 	}
 
 	return rsp, nil
+}
+
+// keepKeysFile copies the observed JWKS, if any, into the desired composite.
+func (f *Function) keepKeysFile(oxr *resource.Composite, patchTo string, composed *composite.Composition) error {
+	prev, err := f.getStringFromPaved(oxr.Resource, patchTo)
+	if err != nil || prev == "" {
+		return nil
+	}
+	return f.patchFieldValueToObject(patchTo, prev, composed.DesiredComposite.Resource)
 }
 
 func (f *Function) getStringFromPaved(req runtime.Object, ref string) (value string, err error) {
