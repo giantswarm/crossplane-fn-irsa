@@ -3,7 +3,7 @@ module github.com/giantswarm/crossplane-fn-irsa
 go 1.26.0
 
 require (
-	github.com/alecthomas/kong v1.16.1
+	github.com/alecthomas/kong v1.17.0
 	github.com/aws/aws-sdk-go-v2 v1.47.8
 	github.com/aws/aws-sdk-go-v2/service/acm v1.51.4
 	github.com/aws/aws-sdk-go-v2/service/cloudfront v1.75.5
