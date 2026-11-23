@@ -9,6 +9,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Keep `status.s3Keys` when the `<cluster>-sa` secret is missing (e.g. after `clusterctl move`), so `keys.json` is no longer deleted from the OIDC bucket.
+
+## [0.4.0] - 2026-11-10
+
+### Changed
+
+- This release aggregates all changes from release candidate 0.4.0-rc.1.
+
+### Fixed
+
+- Set `etag` (MD5 of the decoded content) and `serverSideEncryption: AES256` on the IRSA `BucketObject`s.
+
+## [0.4.0-rc.1] - 2026-11-06
+
+### Fixed
+
 - Set `etag` (MD5 of the decoded content) and `serverSideEncryption: AES256` on the IRSA `BucketObject`s.
 - Fix broken Crossplane documentation link in the README.
 
@@ -57,7 +73,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Sync workflows
 - Use proper versioning when pushing the Crossplane function image
 
-[Unreleased]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.2...HEAD
+[Unreleased]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.4.0-rc.1...v0.4.0
+[0.4.0-rc.1]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.2...v0.4.0-rc.1
 [0.3.2]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/giantswarm/crossplane-fn-irsa/compare/v0.2.0...v0.3.0
