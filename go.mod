@@ -14,8 +14,8 @@ require (
 	github.com/crossplane/function-sdk-go v0.7.1
 	github.com/giantswarm/xfnlib v0.0.0-20261122220059-5bed4dcd2d0b
 	gopkg.in/square/go-jose.v2 v2.6.0
-	k8s.io/api v0.37.2
-	k8s.io/apimachinery v0.37.2
+	k8s.io/api v0.37.3
+	k8s.io/apimachinery v0.37.3
 	sigs.k8s.io/controller-runtime v0.25.3
 	sigs.k8s.io/controller-tools v0.20.1
 )
