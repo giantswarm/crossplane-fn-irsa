@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/crossplane/crossplane-runtime/pkg/logging"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/logging"
 	"github.com/crossplane/function-sdk-go/resource"
 	xr "github.com/crossplane/function-sdk-go/resource/composite"
 
